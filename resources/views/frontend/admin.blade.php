@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>StudApp - Админка</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👑</text></svg>">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Боковое меню -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-primary text-white sidebar">
+                <div class="position-sticky pt-3">
+                    <div class="text-center py-3 border-bottom">
+                        <h5 class="mb-0">Админ-панель</h5>
+                        <small>StudApp</small>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard">
+                                <i class="bi bi-speedometer2 me-2"></i> Главная
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#users">
+                                <i class="bi bi-people me-2"></i> Пользователи
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#courses">
+                                <i class="bi bi-book me-2"></i> Курсы
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#schedule">
+                                <i class="bi bi-calendar me-2"></i> Расписание
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#settings">
+                                <i class="bi bi-gear me-2"></i> Настройки
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="bi bi-box-arrow-left me-2"></i> Выйти
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Основной контент -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <!-- Хедер -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-white rounded-3 shadow-sm mb-4">
+                    <div class="container-fluid">
+                        <h1 class="h4 mb-0">Панель администратора</h1>
+                        <div class="navbar-nav">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-bell"></i> <span class="badge bg-danger">3</span>
+                            </a>
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-person-circle"></i> Администратор
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Главная панель -->
+                <section id="dashboard" class="mb-4">
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-subtitle mb-2 text-muted">Пользователи</h6>
+                                            <h4 class="card-title mb-0">1,234</h4>
+                                        </div>
+                                        <div class="text-primary">
+                                            <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-success">+12% <i class="bi bi-arrow-up"></i></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-subtitle mb-2 text-muted">Курсы</h6>
+                                            <h4 class="card-title mb-0">45</h4>
+                                        </div>
+                                        <div class="text-success">
+                                            <i class="bi bi-book-fill" style="font-size: 2rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-success">+5% <i class="bi bi-arrow-up"></i></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-subtitle mb-2 text-muted">Оценки</h6>
+                                            <h4 class="card-title mb-0">9.4</h4>
+                                        </div>
+                                        <div class="text-warning">
+                                            <i class="bi bi-star-fill" style="font-size: 2rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-danger">-0.2 <i class="bi bi-arrow-down"></i></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-subtitle mb-2 text-muted">Активность</h6>
+                                            <h4 class="card-title mb-0">98%</h4>
+                                        </div>
+                                        <div class="text-info">
+                                            <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <small class="text-success">+3% <i class="bi bi-arrow-up"></i></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Список пользователей -->
+                <section id="users" class="d-none mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Управление пользователями</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Имя</th>
+                                            <th>Email</th>
+                                            <th>Группа</th>
+                                            <th>Роль</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Иван Иванов</td>
+                                            <td>ivan@example.com</td>
+                                            <td>ИТ-101</td>
+                                            <td><span class="badge bg-success">Студент</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1">Редактировать</button>
+                                                <button class="btn btn-sm btn-outline-danger">Удалить</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Петр Петров</td>
+                                            <td>petr@example.com</td>
+                                            <td>ИТ-102</td>
+                                            <td><span class="badge bg-primary">Преподаватель</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1">Редактировать</button>
+                                                <button class="btn btn-sm btn-outline-danger">Удалить</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Администратор</td>
+                                            <td>admin@example.com</td>
+                                            <td>-</td>
+                                            <td><span class="badge bg-dark">Администратор</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1">Редактировать</button>
+                                                <button class="btn btn-sm btn-outline-danger">Удалить</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Управление курсами -->
+                <section id="courses" class="d-none mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Управление курсами</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Веб-разработка</h6>
+                                            <p class="card-text">Современные технологии фронтенда и бэкенда.</p>
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">Преподаватель: Петр Петров</small>
+                                                <button class="btn btn-sm btn-outline-primary">Редактировать</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Базы данных</h6>
+                                            <p class="card-text">SQL, NoSQL, проектирование и оптимизация.</p>
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">Преподаватель: Анна Смирнова</small>
+                                                <button class="btn btn-sm btn-outline-primary">Редактировать</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Форма выхода -->
+    <form id="logout-form" action="/logout" method="POST" style="display: none;">
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,24 +13,34 @@ use App\Http\Controllers\AdminController;
 |
 */
 
-Route::redirect('/', '/login');
+// Главная страница переадресуется на форму входа
+Route::redirect('/', '/login.html');
 
-// Маршруты аутентификации (должны быть доступны всем)
-Auth::routes();
+// Маршруты аутентификации
+Route::get('/login.html', function () {
+    return view('login');
+})->name('login');
 
-// Группа маршрутов для авторизованных пользователей (админ и студент)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 
-    // Перенаправление после аутентификации в зависимости от роли
-    Route::get('/home', function () {
-        $user = auth()->user();
-        if ($user->isAdmin()) {
-            return redirect('/frontend/admin.html');
-        }
-        return redirect('/index.html');
-    })->name('home');
-});
+Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
+Route::get('/register.html', function () {
+    return view('register');
+})->name('register');
 
-    // Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home'); // Закомментировано, так как логика перенесена в другой маршрут
+Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+
+// Маршруты для разных ролей
+Route::view('/admin.html', 'frontend.admin');
+Route::view('/teacher.html', 'frontend.teacher');
+Route::view('/student.html', 'frontend.student');
+Route::view('/index.html', 'frontend.index');
+
+// Статические страницы
+Route::view('/profile.html', 'profile');
+Route::view('/settings.html', 'settings');
+Route::view('/schedule.html', 'schedule');
+Route::view('/grades.html', 'grades');
+Route::view('/marketplace.html', 'marketplace');
+Route::view('/distance-learning.html', 'distance-learning');

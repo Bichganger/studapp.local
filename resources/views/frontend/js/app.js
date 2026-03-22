@@ -1,7 +1,5 @@
-import './bootstrap';
-
 // Глобальный объект приложения
-window.StudApp = {
+const StudApp = {
     // Показ уведомлений
     showNotification(message, type = 'info') {
         const container = document.getElementById('notification-container') || (() => {
@@ -45,6 +43,7 @@ window.StudApp = {
         });
         return isValid;
     },
+
     // Форматирование даты
     formatDate(dateString) {
         if (!dateString) return 'Без срока';
@@ -57,6 +56,7 @@ window.StudApp = {
         if (diffDays <= 7) return `Через ${diffDays} дн.`;
         return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     },
+
     // Загрузка компонентов (если потребуется)
     loadComponent(url, containerId) {
         fetch(url)
@@ -86,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Экспортируем в глобальную область
+window.StudApp = StudApp;
 
 // Установка текущей даты на страницах
 document.addEventListener('DOMContentLoaded', function() {
@@ -130,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify(data)
                 });
@@ -208,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify(data)
                 });
@@ -237,3 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Функция для получения CSRF токена
+function getCsrfToken() {
+    let token = document.head.querySelector('meta[name="csrf-token"]');
+    return token ? token.content : '';
+}

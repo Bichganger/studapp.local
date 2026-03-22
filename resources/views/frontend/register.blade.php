@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/main.css">
     <!-- Фавикон -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -71,17 +72,17 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Имя</label>
-                        <input type="text" class="form-control" id="firstName" placeholder="Иван" required>
+                        <input type="text" class="form-control" id="firstName" name="first_name" placeholder="Иван" required>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Фамилия</label>
-                        <input type="text" class="form-control" id="lastName" placeholder="Иванов" required>
+                        <input type="text" class="form-control" id="lastName" name="last_name" placeholder="Иванов" required>
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Группа</label>
-                    <select class="form-select" id="group" required>
+                    <select class="form-select" id="group" name="group" required>
                         <option value="" disabled selected>Выберите группу</option>
                         <option>ИТ-101</option>
                         <option>ИТ-102</option>
@@ -96,22 +97,22 @@
 
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" placeholder="student@example.com" required>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="student@example.com" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Пароль</label>
-                    <input type="password" class="form-control" id="password" placeholder="Минимум 8 символов" required>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Минимум 8 символов" required>
                     <div class="form-text">Минимум 8 символов, включая буквы и цифры</div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Подтверждение пароля</label>
-                    <input type="password" class="form-control" id="confirmPassword" placeholder="Повторите пароль" required>
+                    <input type="password" class="form-control" id="confirmPassword" name="password_confirmation" placeholder="Повторите пароль" required>
                 </div>
 
                 <div class="mb-4 form-check">
-                    <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                    <input type="checkbox" class="form-check-input" id="agreeTerms" name="agreeTerms" required>
                     <label class="form-check-label" for="agreeTerms">
                         Я согласен с <a href="#" target="_blank">условиями использования</a>
                     </label>
@@ -130,50 +131,5 @@
     <!-- Скрипты -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
-    <script>
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Простая валидация
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const group = document.getElementById('group').value;
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirmPassword').value;
-            const agree = document.getElementById('agreeTerms').checked;
-
-            if (!firstName || !lastName || !group || !email || !password || !confirm) {
-                StudApp.showNotification('Заполните все поля', 'error');
-                return;
-            }
-
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                StudApp.showNotification('Введите корректный email', 'error');
-                return;
-            }
-
-            if (password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
-                StudApp.showNotification('Пароль должен быть минимум 8 символов, содержать буквы и цифры', 'error');
-                return;
-            }
-
-            if (password !== confirm) {
-                StudApp.showNotification('Пароли не совпадают', 'error');
-                return;
-            }
-
-            if (!agree) {
-                StudApp.showNotification('Необходимо согласиться с условиями', 'error');
-                return;
-            }
-
-            // Имитация успешной регистрации
-            StudApp.showNotification('Регистрация прошла успешно! Сейчас вы будете перенаправлены на страницу входа.', 'success');
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 2000);
-        });
-    </script>
 </body>
 </html>

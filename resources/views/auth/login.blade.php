@@ -8,6 +8,12 @@
                 <div class="card-header">{{ __('Login') }}</div>
 
                 <div class="card-body">
+                    @if(session('status'))
+                        <div class="alert alert-success">
+                            {{ session('status') }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
@@ -57,10 +63,10 @@
                                     {{ __('Login') }}
                                 </button>
 
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
+                                @if($errors->has('email'))
+                                    <div class="text-danger mt-2">
+                                        {{ $errors->first('email') }}
+                                    </div>
                                 @endif
                             </div>
                         </div>

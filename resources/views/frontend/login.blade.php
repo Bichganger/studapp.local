@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔐</text></svg>">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-light">
     <div class="container d-flex align-items-center justify-content-center min-vh-100">
@@ -18,14 +19,14 @@
                 <form id="loginForm">
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" placeholder="student@example.com" required>
+                        <input type="email" class="form-control" name="email" placeholder="student@example.com" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Пароль</label>
-                        <input type="password" class="form-control" placeholder="••••••••" required>
+                        <input type="password" class="form-control" name="password" placeholder="••••••••" required>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
                         <label class="form-check-label" for="remember">Запомнить меня</label>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Войти</button>
