@@ -1,3 +1,7 @@
+<?php
+session_start();
+require_once 'protected/auth_guard.php';
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -26,11 +30,11 @@
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-house-door me-1"></i>Главная</a></li>
-                        <li class="nav-item"><a class="nav-link" href="schedule.html"><i class="bi bi-calendar-event me-1"></i>Расписание</a></li>
-                        <li class="nav-item"><a class="nav-link" href="distance-learning.html"><i class="bi bi-laptop me-1"></i>Дистанционное обучение</a></li>
-                        <li class="nav-item"><a class="nav-link" href="marketplace.html"><i class="bi bi-shop me-1"></i>Библиотека работ</a></li>
-                        <li class="nav-item"><a class="nav-link" href="grades.html"><i class="bi bi-graph-up me-1"></i>Успеваемость</a></li>
+                        <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="bi bi-house-door me-1"></i>Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="schedule.php"><i class="bi bi-calendar-event me-1"></i>Расписание</a></li>
+                    <li class="nav-item"><a class="nav-link" href="distance-learning.php"><i class="bi bi-laptop me-1"></i>Дистанционное обучение</a></li>
+                    <li class="nav-item"><a class="nav-link" href="marketplace.php"><i class="bi bi-shop me-1"></i>Библиотека работ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="grades.php"><i class="bi bi-graph-up me-1"></i>Успеваемость</a></li>
                     </ul>
                     <div class="d-flex align-items-center gap-3">
                         <div class="dropdown">
@@ -56,10 +60,10 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><h6 class="dropdown-header">Студент, 3 курс, ИТ-321</h6></li>
-                                <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person me-2"></i>Профиль</a></li>
-                                <li><a class="dropdown-item active" href="settings.html"><i class="bi bi-gear me-2"></i>Настройки</a></li>
+                                <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Профиль</a></li>
+                                <li><a class="dropdown-item active" href="settings.php"><i class="bi bi-gear me-2"></i>Настройки</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="login.html"><i class="bi bi-box-arrow-right me-2"></i>Выйти</a></li>
+                                <li><a class="dropdown-item" href="login.php"><i class="bi bi-box-arrow-right me-2"></i>Выйти</a></li>
                             </ul>
                         </div>
                     </div>

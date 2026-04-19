@@ -1,3 +1,7 @@
+<?php
+session_start();
+require_once 'protected/auth_guard.php';
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -45,7 +49,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="login.html">
+                            <a class="nav-link" href="login.php">
                                 <i class="bi bi-box-arrow-left me-2"></i> Выйти
                             </a>
                         </li>
