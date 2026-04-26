@@ -36,4 +36,29 @@ try {
     header("Location: login.php?error=Ошибка сервера");
     exit;
 }
+// После проверки логина/пароля
+$stmt = $pdo->prepare("SELECT id, username, full_name, role FROM users WHERE username = ?");
+$stmt->execute([$username]);
+$user = $stmt->fetch();
+
+if ($user) {
+    session_start();
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['username'] = $user['username'];
+    $_SESSION['full_name'] = $user['full_name']; // ← ВАЖНО!
+    $_SESSION['role'] = $user['role'];
+
+    // Редирект по роли
+    switch ($user['role']) {
+        case 'admin':
+            header("Location: ../frontend/admin-panel.php");
+            break;
+        case 'teacher':
+            header("Location: ../frontend/teacher.php");
+            break;
+        default:
+            header("Location: ../frontend/dashboard.php");
+    }
+    exit;
+}
 ?>

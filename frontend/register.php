@@ -17,7 +17,7 @@
     <div class="card">
         <div class="card-body p-5 text-center">
             <h3 class="mb-4"><i class="bi bi-person-plus-fill text-success"></i> Регистрация</h3>
-            <p class="text-muted mb-4">Создайте новый аккаунт</p>
+            <p class="text-muted mb-4">Создайте аккаунт студента</p>
 
             <?php if (isset($_GET['error'])): ?>
                 <div class="alert alert-danger"><?= htmlspecialchars($_GET['error']) ?></div>
@@ -39,14 +39,9 @@
                     <label class="form-label">Пароль</label>
                     <input type="password" name="password" class="form-control" required minlength="6">
                 </div>
-                <div class="mb-3 text-start">
-                    <label class="form-label">Роль</label>
-                    <select name="role" class="form-select" required>
-                        <option value="student">Студент</option>
-                        <option value="teacher">Преподаватель</option>
-                        <option value="admin">Администратор</option>
-                    </select>
-                </div>
+                <!-- Роль скрыта — всегда student -->
+                <input type="hidden" name="role" value="student">
+
                 <button type="submit" class="btn btn-success w-100 mb-3">Зарегистрироваться</button>
             </form>
 
