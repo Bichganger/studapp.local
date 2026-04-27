@@ -13,7 +13,6 @@ require_once 'config/db.php';
 if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     $id = (int)$_GET['delete'];
 
-    // Нельзя удалить себя
     if ($id === $_SESSION['user_id']) {
         header("Location: admin-panel.php?error=Нельзя удалить свой аккаунт");
         exit;
@@ -106,10 +105,8 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админка — StudApp</title>
-    <!-- Bootstrap 5.3 -->
+    <title>Админка — Учёба.Онлайн</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body { background: #f8f9fa; }
@@ -141,7 +138,6 @@ try {
         }
         .tab-content { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         footer { margin-left: 260px; padding: 20px; text-align: center; font-size: 0.9rem; color: #6c757d; }
-        .card-icon { font-size: 2rem; color: #6c757d; }
     </style>
 </head>
 <body>
@@ -150,6 +146,7 @@ try {
 <div class="sidebar">
     <div class="text-center mb-4">
         <h5><i class="bi bi-shield-lock"></i> Админка</h5>
+        <p class="text-white-50 small">Доступ: полный</p>
     </div>
     <nav>
         <a href="#" class="active" data-bs-toggle="tab" data-bs-target="#users"><i class="bi bi-people me-2"></i>Пользователи</a>
@@ -159,7 +156,7 @@ try {
         <a href="#" data-bs-toggle="tab" data-bs-target="#notifications"><i class="bi bi-bell me-2"></i>Рассылка</a>
         <a href="#" data-bs-toggle="tab" data-bs-target="#settings"><i class="bi bi-gear me-2"></i>Настройки</a>
         <hr class="mx-3">
-        <a href="../frontend/dashboard.php" class="text-danger"><i class="bi bi-arrow-left me-2"></i>Назад</a>
+        <a href="dashboard.php" class="text-danger"><i class="bi bi-arrow-left me-2"></i>Назад</a>
     </nav>
 </div>
 
@@ -168,115 +165,115 @@ try {
     <div class="tab-content">
 
         <!-- Вкладка: Пользователи -->
-<div class="tab-pane fade show active" id="users">
-    <h2><i class="bi bi-people"></i> Управление пользователями</h2>
+        <div class="tab-pane fade show active" id="users">
+            <h2><i class="bi bi-people"></i> Управление пользователями</h2>
 
-    <!-- Статистика -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h6><i class="bi bi-people"></i> Всего</h6>
-                    <p class="display-6 mb-0"><?= $userCount ?></p>
+            <!-- Статистика -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body">
+                            <h6><i class="bi bi-people"></i> Всего</h6>
+                            <p class="display-6 mb-0"><?= $userCount ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <h6><i class="bi bi-mortarboard"></i> Студенты</h6>
+                            <p class="display-6 mb-0"><?= $studentCount ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <h6><i class="bi bi-person-badge"></i> Преподаватели</h6>
+                            <p class="display-6 mb-0"><?= $teacherCount ?></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success">
+
+            <!-- Форма добавления -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Добавить пользователя</h5>
+                </div>
                 <div class="card-body">
-                    <h6><i class="bi bi-mortarboard"></i> Студенты</h6>
-                    <p class="display-6 mb-0"><?= $studentCount ?></p>
+                    <form method="POST" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">ФИО *</label>
+                            <input type="text" name="full_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Логин *</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Пароль *</label>
+                            <input type="password" name="password" class="form-control" required minlength="6">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Роль</label>
+                            <select name="role" class="form-select">
+                                <option value="student">Студент</option>
+                                <option value="teacher">Преподаватель</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success">➕ Добавить</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <h6><i class="bi bi-person-badge"></i> Преподаватели</h6>
-                    <p class="display-6 mb-0"><?= $teacherCount ?></p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Форма добавления -->
-    <div class="card mb-4">
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Добавить пользователя</h5>
+            <!-- Таблица пользователей -->
+            <h5><i class="bi bi-list"></i> Список пользователей</h5>
+            <?php if (empty($users)): ?>
+                <div class="alert alert-info">Нет пользователей.</div>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ФИО</th>
+                                <th>Логин</th>
+                                <th>Роль</th>
+                                <th>Дата регистрации</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($users as $user): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($user['full_name']) ?></td>
+                                    <td><?= htmlspecialchars($user['username']) ?></td>
+                                    <td>
+                                        <span class="badge bg-<?= $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'teacher' ? 'success' : 'primary') ?>">
+                                            <?= ['student' => 'Студент', 'teacher' => 'Преподаватель', 'admin' => 'Администратор'][$user['role']] ?>
+                                        </span>
+                                    </td>
+                                    <td><?= date("d.m.Y", strtotime($user['created_at'])) ?></td>
+                                    <td>
+                                        <?php if ($user['role'] !== 'admin'): ?>
+                                            <a href="?delete=<?= $user['id'] ?>" 
+                                               class="btn btn-sm btn-outline-danger"
+                                               onclick="return confirm('Удалить <?= addslashes($user['full_name']) ?>?')">
+                                                <i class="bi bi-trash"></i> Удалить
+                                            </a>
+                                        <?php else: ?>
+                                            <small class="text-muted">—</small>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
-        <div class="card-body">
-            <form method="POST" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">ФИО *</label>
-                    <input type="text" name="full_name" class="form-control" required>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Логин *</label>
-                    <input type="text" name="username" class="form-control" required>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Пароль *</label>
-                    <input type="password" name="password" class="form-control" required minlength="6">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Роль</label>
-                    <select name="role" class="form-select">
-                        <option value="student">Студент</option>
-                        <option value="teacher">Преподаватель</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-success">➕ Добавить</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Таблица пользователей -->
-    <h5><i class="bi bi-list"></i> Список пользователей</h5>
-    <?php if (empty($users)): ?>
-        <div class="alert alert-info">Нет пользователей.</div>
-    <?php else: ?>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>ФИО</th>
-                        <th>Логин</th>
-                        <th>Роль</th>
-                        <th>Дата регистрации</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($user['full_name']) ?></td>
-                            <td><?= htmlspecialchars($user['username']) ?></td>
-                            <td>
-                                <span class="badge bg-<?= $user['role'] === 'admin' ? 'danger' : ($user['role'] === 'teacher' ? 'success' : 'primary') ?>">
-                                    <?= ['student' => 'Студент', 'teacher' => 'Преподаватель', 'admin' => 'Администратор'][$user['role']] ?>
-                                </span>
-                            </td>
-                            <td><?= date("d.m.Y", strtotime($user['created_at'])) ?></td>
-                            <td>
-                                <?php if ($user['role'] !== 'admin'): ?>
-                                    <a href="?delete=<?= $user['id'] ?>" 
-                                       class="btn btn-sm btn-outline-danger"
-                                       onclick="return confirm('Удалить <?= addslashes($user['full_name']) ?>?')">
-                                        <i class="bi bi-trash"></i> Удалить
-                                    </a>
-                                <?php else: ?>
-                                    <small class="text-muted">—</small>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    <?php endif; ?>
-</div>
 
         <!-- Вкладка: Расписание -->
         <div class="tab-pane fade" id="schedule">
@@ -312,7 +309,7 @@ try {
                     </div>
                 </div>
             </form>
-            <div class="alert alert-light">Здесь будет таблица расписания (можно добавить позже).</div>
+            <div class="alert alert-light">Здесь будет таблица расписания.</div>
         </div>
 
         <!-- Вкладка: Группы -->
@@ -372,7 +369,7 @@ try {
             <form>
                 <div class="mb-3">
                     <label class="form-label">Название системы</label>
-                    <input type="text" class="form-control" value="StudApp">
+                    <input type="text" class="form-control" value="Учёба.Онлайн">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Режим обслуживания</label>
@@ -388,51 +385,9 @@ try {
     </div>
 </main>
 
-<!-- Модальное окно: Добавить пользователя -->
-<div class="modal fade" id="addUserModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="admin_add_user.php" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">➕ Добавить пользователя</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">ФИО *</label>
-                        <input type="text" name="full_name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Логин *</label>
-                        <input type="text" name="username" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Пароль *</label>
-                        <input type="password" name="password" class="form-control" required minlength="6">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Роль</label>
-                        <select name="role" class="form-select">
-                            <option value="student">Студент</option>
-                            <option value="teacher">Преподаватель</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Создать</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <!-- Подвал -->
-<footer>
-    &copy; 2024 StudApp. Админ-панель в одном файле.
-</footer>
+<footer>&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
 
-<!-- Скрипты -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,109 +1,63 @@
-<?php
-// Если пользователь уже вошёл — перенаправляем в кабинет
-session_start();
-if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
-    exit;
-}
-?>
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudApp — Умная система для студентов</title>
-    <!-- Bootstrap 5.3 -->
+    <title>Учёба.Онлайн — современная образовательная платформа</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Стили -->
     <style>
-        body {
-            background: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
-        .hero {
-            padding: 100px 20px;
-            text-align: center;
-            background: linear-gradient(135deg, #4e54c8, #8f94fb);
-            color: white;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .hero h1 {
-            font-size: 3rem;
-            font-weight: 700;
-        }
-        .hero .lead {
-            font-size: 1.25rem;
-            opacity: 0.9;
-        }
-        .btn-lg {
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            font-weight: 500;
-        }
-        .features {
-            padding: 60px 0;
-        }
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        footer {
-            padding: 40px 0;
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .heart {
-            color: #e74c3c;
-        }
+        body { background: #f8f9fa; font-family: sans-serif; }
+        .hero { padding: 80px 0; text-align: center; }
+        .features { padding: 60px 0; background: white; }
+        .feature-icon { font-size: 2.5rem; color: #0d6efd; margin-bottom: 16px; }
+        .btn-custom { background: #0d6efd; color: white; padding: 12px 30px; font-size: 1.1rem; }
+        footer { text-align: center; padding: 40px 0; font-size: 0.9rem; color: #6c757d; }
     </style>
 </head>
 <body>
 
-<!-- Герой -->
-<section class="hero">
-    <div class="container">
-        <h1><i class="bi bi-journal-bookmark-fill me-2"></i> StudApp</h1>
-        <p class="lead">Единая платформа для студентов, преподавателей и администраторов</p>
+<!-- Шапка -->
+<header class="bg-primary text-white">
+    <div class="container hero">
+        <h1><i class="bi bi-journal-code"></i> Учёба.Онлайн</h1>
+        <p class="lead">Современная платформа для студентов и преподавателей</p>
         <div class="mt-4">
-            <a href="login.php" class="btn btn-light btn-lg me-3 shadow-sm">Войти</a>
-            <a href="register.php" class="btn btn-outline-light btn-lg shadow-sm">Зарегистрироваться</a>
+            <a href="login.php" class="btn btn-light btn-lg me-3">Войти</a>
+            <a href="register.php" class="btn btn-custom btn-lg">Регистрация</a>
         </div>
     </div>
-</section>
+</header>
 
-<!-- Преимущества -->
-<section class="container features">
-    <div class="row text-center g-4">
-        <div class="col-md-4">
-            <div class="text-primary feature-icon">
-                <i class="bi bi-calendar-event"></i>
+<!-- Возможности -->
+<section class="features">
+    <div class="container">
+        <h2 class="text-center mb-5">Возможности платформы</h2>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <i class="bi bi-calendar-event feature-icon"></i>
+                <h4>Расписание</h4>
+                <p>Удобное расписание пар с уведомлениями и напоминаниями.</p>
             </div>
-            <h5>Расписание</h5>
-            <p class="text-muted">Всегда в курсе своих пар и экзаменов</p>
-        </div>
-        <div class="col-md-4">
-            <div class="text-success feature-icon">
-                <i class="bi bi-graph-up"></i>
+            <div class="col-md-4">
+                <i class="bi bi-graph-up feature-icon"></i>
+                <h4>Успеваемость</h4>
+                <p>Контроль оценок и посещаемости в реальном времени.</p>
             </div>
-            <h5>Успеваемость</h5>
-            <p class="text-muted">Следите за своими оценками в реальном времени</p>
-        </div>
-        <div class="col-md-4">
-            <div class="text-warning feature-icon">
-                <i class="bi bi-shop"></i>
+            <div class="col-md-4">
+                <i class="bi bi-mortarboard feature-icon"></i>
+                <h4>Для преподавателей</h4>
+                <p>Выставление оценок, проверка работ, рассылки.</p>
             </div>
-            <h5>Библиотека работ</h5>
-            <p class="text-muted">Находите и делитесь учебными материалами</p>
         </div>
     </div>
 </section>
 
 <!-- Подвал -->
-<footer class="text-center">
-    <p>&copy; 2024 StudApp. Разработано с <i class="bi bi-heart-fill heart"></i></p>
+<footer>
+    &copy; 2026 Учёба.Онлайн. Образование будущего.
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

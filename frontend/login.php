@@ -1,13 +1,9 @@
-<?php
-session_start();
-
-?>
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в StudApp</title>
+    <title>Вход — Учёба.Онлайн</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -19,7 +15,7 @@ session_start();
 <div class="login-card">
     <div class="card">
         <div class="card-body p-5 text-center">
-            <h3 class="mb-4"><i class="bi bi-journal-bookmark-fill text-primary"></i> StudApp</h3>
+            <h3 class="mb-4"><i class="bi bi-journal-code text-primary"></i> Учёба.Онлайн</h3>
             <p class="text-muted mb-4">Введите данные для входа</p>
 
             <?php if (isset($_GET['error'])): ?>
@@ -42,5 +38,9 @@ session_start();
         </div>
     </div>
 </div>
+
+<footer class="text-center mt-3" style="font-size: 0.9rem; color: #6c757d;">&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

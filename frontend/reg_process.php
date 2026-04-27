@@ -10,21 +10,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $full_name = trim($_POST['full_name']);
 $username = trim($_POST['username']);
 $password = $_POST['password'];
-$role = $_POST['role'];
+$role = $_POST['role'] ?? 'student';
 
-// Валидация
 if (empty($full_name) || empty($username) || empty($password)) {
     header("Location: register.php?error=Заполните все поля");
     exit;
 }
 
-if (strlen($password) < 6) {
-    header("Location: register.php?error=Пароль должен быть не менее 6 символов");
+if ($role !== 'student') {
+    header("Location: register.php?error=Регистрация доступна только студентам");
     exit;
 }
 
 try {
-    // Проверка, существует ли пользователь
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute([$username]);
     if ($stmt->fetch()) {
@@ -32,7 +30,6 @@ try {
         exit;
     }
 
-    // Хешируем пароль и сохраняем
     $hashed = password_hash($password, PASSWORD_DEFAULT);
     $stmt = $pdo->prepare("INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)");
     $stmt->execute([$username, $hashed, $role, $full_name]);

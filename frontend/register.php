@@ -3,8 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация в StudApp</title>
+    <title>Регистрация — Учёба.Онлайн</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -39,9 +38,7 @@
                     <label class="form-label">Пароль</label>
                     <input type="password" name="password" class="form-control" required minlength="6">
                 </div>
-                <!-- Роль скрыта — всегда student -->
                 <input type="hidden" name="role" value="student">
-
                 <button type="submit" class="btn btn-success w-100 mb-3">Зарегистрироваться</button>
             </form>
 
@@ -49,5 +46,10 @@
         </div>
     </div>
 </div>
+
+<footer class="text-center mt-3" style="font-size: 0.9rem; color: #6c757d;">&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
