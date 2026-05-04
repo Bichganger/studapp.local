@@ -57,8 +57,14 @@ $currentDate = date("j F Y");
 
             <hr>
             <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                <?php if ($role === 'teacher'): ?>
+                    <a href="teacher/teacher.php" class="btn btn-outline-secondary"><i class="bi bi-house"></i> В кабинет</a>
+                <?php elseif ($role === 'student'): ?>
+                    <a href="student/student-dashboard.php" class="btn btn-outline-secondary"><i class="bi bi-house"></i> В кабинет</a>
+                <?php elseif ($role === 'admin'): ?>
+                    <a href="admin/admin-dashboard.php" class="btn btn-outline-secondary"><i class="bi bi-house"></i> В кабинет</a>
+                <?php endif; ?>
                 <a href="settings.php" class="btn btn-outline-primary"><i class="bi bi-gear"></i> Настройки</a>
-                <a href="dashboard.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Назад</a>
             </div>
         </div>
     </div>

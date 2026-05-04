@@ -62,7 +62,13 @@ $currentDate = date("j F Y");
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link active" href="dashboard.php"><i class="bi bi-house-door me-1"></i>Главная</a></li>
-                <li class="nav-item"><a class="nav-link" href="schedule.php"><i class="bi bi-calendar-event me-1"></i>Расписание</a></li>
+                <?php if ($role === 'teacher'): ?>
+                    <li class="nav-item"><a class="nav-link" href="teacher/teacher.php"><i class="bi bi-calendar me-1"></i>Кабинет преподавателя</a></li>
+                <?php elseif ($role === 'student'): ?>
+                    <li class="nav-item"><a class="nav-link" href="student/student-schedule.php"><i class="bi bi-calendar-event me-1"></i>Расписание</a></li>
+                <?php elseif ($role === 'admin'): ?>
+                    <li class="nav-item"><a class="nav-link" href="admin/admin-dashboard.php"><i class="bi bi-shield-lock me-1"></i>Админка</a></li>
+                <?php endif; ?>
                 <li class="nav-item"><a class="nav-link" href="distance-learning.php"><i class="bi bi-laptop me-1"></i>Дистанционка</a></li>
                 <li class="nav-item"><a class="nav-link" href="grades.php"><i class="bi bi-graph-up me-1"></i>Успеваемость</a></li>
             </ul>
@@ -93,24 +99,74 @@ $currentDate = date("j F Y");
                 <p class="small text-muted">Дата входа: <?= $currentDate ?></p>
             </div>
             <div class="row g-4">
-                <div class="col-md-6">
-                    <a href="schedule.php" class="card text-decoration-none text-reset h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-calendar-event card-icon text-primary"></i>
-                            <h5>Расписание</h5>
-                            <p class="text-muted">Посмотреть пары на неделю</p>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-6">
-                    <a href="grades.php" class="card text-decoration-none text-reset h-100">
-                        <div class="card-body text-center">
-                            <i class="bi bi-graph-up card-icon text-success"></i>
-                            <h5>Успеваемость</h5>
-                            <p class="text-muted">Оценки и посещаемость</p>
-                        </div>
-                    </a>
-                </div>
+                <?php if ($role === 'teacher'): ?>
+                    <div class="col-md-6">
+                        <a href="teacher/teacher.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-mortarboard card-icon text-success"></i>
+                                <h5>Кабинет преподавателя</h5>
+                                <p class="text-muted">Перейти в личный кабинет</p>
+                            </div>
+                        </a>
+                    </div>
+                <?php elseif ($role === 'student'): ?>
+                    <div class="col-md-6">
+                        <a href="student/student-dashboard.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar-event card-icon text-primary"></i>
+                                <h5>Расписание</h5>
+                                <p class="text-muted">Посмотреть пары на неделю</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="student/student-grades.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up card-icon text-success"></i>
+                                <h5>Успеваемость</h5>
+                                <p class="text-muted">Оценки и посещаемость</p>
+                            </div>
+                        </a>
+                    </div>
+                <?php elseif ($role === 'admin'): ?>
+                    <div class="col-md-6">
+                        <a href="admin/admin-dashboard.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-shield-lock card-icon text-danger"></i>
+                                <h5>Админ-панель</h5>
+                                <p class="text-muted>Управление системой</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="admin/admin-users.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-people card-icon text-primary"></i>
+                                <h5>Пользователи</h5>
+                                <p class="text-muted">Управление аккаунтами</p>
+                            </div>
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <div class="col-md-6">
+                        <a href="schedule.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar-event card-icon text-primary"></i>
+                                <h5>Расписание</h5>
+                                <p class="text-muted">Посмотреть пары на неделю</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="grades.php" class="card text-decoration-none text-reset h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up card-icon text-success"></i>
+                                <h5>Успеваемость</h5>
+                                <p class="text-muted">Оценки и посещаемость</p>
+                            </div>
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-md-4">

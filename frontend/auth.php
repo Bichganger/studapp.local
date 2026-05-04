@@ -24,10 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             switch ($user['role']) {
                 case 'admin':
-                    header("Location: admin-panel.php");
+                    header("Location: admin/admin-dashboard.php");
                     break;
                 case 'teacher':
-                    header("Location: teacher.php");
+                    header("Location: teacher/teacher.php");
+                    break;
+                case 'student':
+                    header("Location: student/student-dashboard.php");
                     break;
                 default:
                     header("Location: dashboard.php");

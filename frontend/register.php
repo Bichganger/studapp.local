@@ -6,9 +6,27 @@
     <title>Регистрация — Учёба.Онлайн</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        body { background: #f0f2f5; height: 100vh; display: flex; align-items: center; }
-        .reg-card { max-width: 460px; margin: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+     <style>
+        body {
+            background: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .reg-card {
+            max-width: 460px;
+            margin: 60px auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 20px 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            margin-top: 60px;
+        }
     </style>
 </head>
 <body>
