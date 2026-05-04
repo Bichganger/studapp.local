@@ -13,7 +13,7 @@ $is_teacher = $_SESSION['role'] === 'teacher';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расписание — Учёба.Онлайн</title>
+    <title>Расписание — Учеба24</title>
     <!-- Bootstrap 5.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -85,7 +85,7 @@ $is_teacher = $_SESSION['role'] === 'teacher';
 <!-- Навигация -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="dashboard.php"><i class="bi bi-journal-code"></i> Учёба.Онлайн</a>
+        <a class="navbar-brand" href="dashboard.php"><i class="bi bi-journal-code"></i> Учеба24</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -326,7 +326,7 @@ $is_teacher = $_SESSION['role'] === 'teacher';
 </div>
 
 <!-- Подвал -->
-<footer class="footer">&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer class="footer">&copy; 2026 Учеба24</footer>
 
 <!-- Скрипты -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

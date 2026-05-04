@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Вход — Учёба.Онлайн</title>
+    <title>Вход — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <style>
@@ -33,7 +33,7 @@
 <div class="login-card">
     <div class="card">
         <div class="card-body p-5 text-center">
-            <h3 class="mb-4"><i class="bi bi-journal-code text-primary"></i> Учёба.Онлайн</h3>
+            <h3 class="mb-4"><i class="bi bi-journal-code text-primary"></i> Учеба24</h3>
             <p class="text-muted mb-4">Введите данные для входа</p>
 
             <?php if (isset($_GET['error'])): ?>
@@ -57,7 +57,7 @@
     </div>
 </div>
 
-<footer class="text-center mt-3" style="font-size: 0.9rem; color: #6c757d;">&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer class="text-center mt-3" style="font-size: 0.9rem; color: #6c757d;">&copy; 2026 Учеба24</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

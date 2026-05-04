@@ -27,7 +27,7 @@ $currentDate = date("j F Y");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кабинет — Учёба.Онлайн</title>
+    <title>Кабинет — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -55,7 +55,7 @@ $currentDate = date("j F Y");
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="dashboard.php"><i class="bi bi-journal-code"></i> Учёба.Онлайн</a>
+        <a class="navbar-brand" href="dashboard.php"><i class="bi bi-journal-code"></i> Учеба24</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -199,7 +199,7 @@ $currentDate = date("j F Y");
     </div>
 </div>
 
-<footer class="footer">&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer class="footer">&copy; 2026 Учеба24</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

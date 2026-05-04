@@ -104,7 +104,7 @@ try {
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Пользователи — Админка — Учёба.Онлайн</title>
+    <title>Пользователи — Админка — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -276,7 +276,7 @@ try {
 </main>
 
 <!-- Подвал -->
-<footer>&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer>&copy; 2026 Учеба24</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

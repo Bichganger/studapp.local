@@ -1,127 +1,106 @@
-# Структура проекта Учёба.Онлайн
+# Структура проекта Учеба24
 
-## Обзор структуры
-
-Проект организован по принципу разделения по ролям пользователей:
+## Файловая структура
 
 ```
 frontend/
-├── teacher/              # Страницы для преподавателей
-│   ├── index.php         # Редирект на teacher.php
-│   ├── teacher.php       # Главная страница преподавателя
-│   ├── teacher-schedule.php      # Расписание
-│   ├── teacher-grades.php        # Выставление оценок
-│   ├── teacher-assignments.php   # Работы студентов
-│   ├── teacher-groups.php        # Мои группы
+├── index.php                 # Главная страница (лендинг)
+├── login.php                 # Страница входа
+├── register.php              # Регистрация студентов
+├── auth.php                  # Обработка входа
+├── logout.php                # Выход из системы
+├── dashboard.php             # Ролевая главная страница
+├── profile.php               # Профиль пользователя
+├── settings.php              # Настройки аккаунта
+├── schedule.php              # Общее расписание
+├── grades.php                # Общая успеваемость
+├── distance-learning.php     # Дистанционное обучение
+├── marketplace.php           # Библиотека работ
+├── admin-panel.php           # Перенаправление на админку
+├── STRUCTURE.md              # Документация структуры
+├── NAVIGATION.md             # Документация навигации
+│
+├── protected/                # Защищённые файлы
+│   └── auth_guard.php        # Проверка авторизации
+│
+├── config/                   # Конфигурация
+│   └── db.php                # Подключение к БД
+│
+├── teacher/                  # Кабинет преподавателя
+│   ├── index.php             # Редирект на teacher.php
+│   ├── teacher.php           # Главная преподавателя
+│   ├── teacher-schedule.php  # Расписание
+│   ├── teacher-journal.php   # Журнал пар
+│   ├── teacher-grades.php    # Выставление оценок
+│   ├── teacher-assignments.php # Работы студентов
+│   ├── teacher-groups.php    # Кураторские группы
 │   └── teacher-notifications.php # Уведомления
 │
-├── student/              # Страницы для студентов
-│   ├── index.php         # Редирект на student-dashboard.php
-│   ├── student-dashboard.php     # Главная студента
-│   ├── student-schedule.php      # Расписание
-│   ├── student-grades.php        # Оценки
-│   ├── student-assignments.php   # Мои работы
-│   ├── student-library.php       # Библиотека
+├── student/                  # Кабинет студента
+│   ├── index.php             # Редирект на student-dashboard.php
+│   ├── student-dashboard.php # Главная студента
+│   ├── student-schedule.php  # Расписание
+│   ├── student-grades.php    # Оценки
+│   ├── student-assignments.php # Мои работы
+│   ├── student-library.php   # Библиотека
 │   └── student-notifications.php # Уведомления
 │
-├── admin/                # Страницы для администраторов
-│   ├── index.php         # Редирект на admin-dashboard.php
-│   ├── admin-dashboard.php       # Главная администратора
-│   ├── admin-users.php           # Управление пользователями
-│   ├── admin-schedule.php        # Управление расписанием
-│   ├── admin-groups.php          # Управление группами
-│   ├── admin-library.php         # Модерация библиотеки
-│   ├── admin-notifications.php   # Рассылка уведомлений
-│   └── admin-settings.php        # Настройки системы
-│
-├── protected/            # Защита страниц
-│   └── auth_guard.php    # Проверка авторизации
-│
-├── config/               # Конфигурация
-│   └── db.php            # Подключение к БД
-│
-├── dashboard.php         # Главная страница (кабинет)
-├── login.php             # Страница входа
-├── logout.php            # Выход из системы
-├── register.php          # Регистрация
-├── profile.php           # Профиль пользователя
-└── ...                   # Общие страницы
+└── admin/                    # Панель администратора
+    ├── index.php             # Редирект на admin-dashboard.php
+    ├── admin-dashboard.php   # Главная администратора
+    ├── admin-users.php       # Управление пользователями
+    ├── admin-schedule.php    # Управление расписанием
+    ├── admin-groups.php      # Управление группами
+    ├── admin-library.php     # Модерация библиотеки
+    ├── admin-notifications.php # Рассылка
+    └── admin-settings.php    # Настройки системы
 ```
 
-## Маршрутизация
+## Ролевая маршрутизация
 
-### Преподаватель (teacher)
-- `/teacher/` или `/teacher/index.php` → `teacher.php`
-- `/teacher/teacher.php` → Главная преподавателя
-- `/teacher/teacher-schedule.php` → Расписание
-- `/teacher/teacher-grades.php` → Выставление оценок
-- `/teacher/teacher-assignments.php` → Работы студентов
-- `/teacher/teacher-groups.php` → Мои группы
-- `/teacher/teacher-notifications.php` → Уведомления
+### После входа (auth.php):
 
-### Студент (student)
-- `/student/` или `/student/index.php` → `student-dashboard.php`
-- `/student/student-dashboard.php` → Главная студента
-- `/student/student-schedule.php` → Расписание
-- `/student/student-grades.php` → Оценки
-- `/student/student-assignments.php` → Мои работы
-- `/student/student-library.php` → Библиотека
-- `/student/student-notifications.php` → Уведомления
+| Роль | Перенаправление |
+|------|-----------------|
+| admin | admin/admin-dashboard.php |
+| teacher | teacher/teacher.php |
+| student | student/student-dashboard.php |
 
-### Администратор (admin)
-- `/admin/` или `/admin/index.php` → `admin-dashboard.php`
-- `/admin/admin-dashboard.php` → Главная администратора
-- `/admin/admin-users.php` → Управление пользователями
-- `/admin/admin-schedule.php` → Управление расписанием
-- `/admin/admin-groups.php` → Управление группами
-- `/admin/admin-library.php` → Модерация библиотеки
-- `/admin/admin-notifications.php` → Рассылка
-- `/admin/admin-settings.php` → Настройки
+### Через dashboard.php:
 
-## Стили
+| Роль | Перенаправление |
+|------|-----------------|
+| admin | admin/admin-dashboard.php |
+| teacher | teacher/teacher.php |
+| student | student/student-dashboard.php |
 
-Все страницы для каждой роли имеют единый стиль:
+## Путь к ресурсам
 
-### Преподаватель
-- Цвет бокового меню: `#343a40` (тёмно-серый)
-- Активный элемент: `#495057`
+| Файл | Из корня | Из подпапок |
+|------|----------|-------------|
+| logout.php | `logout.php` | `../logout.php` |
+| auth_guard.php | `protected/auth_guard.php` | `../protected/auth_guard.php` |
+| dashboard.php | `dashboard.php` | `../dashboard.php` |
+| db.php | `config/db.php` | `../config/db.php` |
+| login.php | `login.php` | `../login.php` |
 
-### Студент
-- Цвет бокового меню: `#0d6efd` (синий Bootstrap primary)
-- Активный элемент: `#0b5ed7`
+## Защита страниц
 
-### Администратор
-- Цвет бокового меню: `#2c3e50` (тёмно-синий)
-- Активный элемент: `#34495e`
-
-## Авторизация
-
-Все страницы используют `auth_guard.php` для проверки авторизации:
 ```php
-require_once '../protected/auth_guard.php';
+<?php
+session_start();
+require_once 'protected/auth_guard.php'; // или ../protected/auth_guard.php
 
-if ($_SESSION['role'] !== 'desired_role') {
+// Опционально: проверка роли
+if ($_SESSION['role'] !== 'required_role') {
     header("Location: ../dashboard.php");
     exit;
 }
+?>
 ```
 
-## Общие страницы
+## Регистрация
 
-- `dashboard.php` - главная страница с ролевой навигацией
-- `login.php` - страница входа
-- `logout.php` - выход из системы
-- `register.php` - регистрация
-- `profile.php` - профиль пользователя
-- `schedule.php` - общее расписание
-- `grades.php` - общая успеваемость
-- `distance-learning.php` - дистанционное обучение
-- `marketplace.php` - библиотека работ
-- `admin-panel.php` - перенаправление на admin/admin-dashboard.php
-
-## Примечания
-
-1. Все пути к ресурсам относительные от корня `frontend/`
-2. Для доступа к `protected/auth_guard.php` из подпапок используется `../protected/auth_guard.php`
-3. Для выхода используется `../logout.php`
-4. Для возврата на dashboard используется `../dashboard.php`
+- **Студенты**: через register.php (проверка по базе данных по ФИО + группе + курсу)
+- **Преподаватели**: только через админ-панель или напрямую в БД
+- **Администраторы**: только напрямую в БД

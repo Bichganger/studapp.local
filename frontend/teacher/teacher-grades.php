@@ -15,7 +15,7 @@ $currentDate = date("j F Y");
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Выставление оценок — Кабинет преподавателя — Учёба.Онлайн</title>
+    <title>Выставление оценок — Кабинет преподавателя — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -57,7 +57,7 @@ $currentDate = date("j F Y");
 <!-- Боковое меню -->
 <div class="sidebar">
     <div class="text-center mb-4">
-        <h5><i class="bi bi-mortarboard"></i> Учёба.Онлайн</h5>
+        <h5><i class="bi bi-mortarboard"></i> Учеба24</h5>
         <p class="text-white-50 small">Преподаватель</p>
     </div>
     <nav>
@@ -176,7 +176,7 @@ $currentDate = date("j F Y");
 </main>
 
 <!-- Подвал -->
-<footer>&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer>&copy; 2026 Учеба24</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

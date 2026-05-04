@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Учёба.Онлайн — современная образовательная платформа</title>
+    <title>Учеба24 — современная образовательная платформа</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -20,7 +20,7 @@
 <!-- Шапка -->
 <header class="bg-primary text-white">
     <div class="container hero">
-        <h1><i class="bi bi-journal-code"></i> Учёба.Онлайн</h1>
+        <h1><i class="bi bi-journal-code"></i> Учеба24</h1>
         <p class="lead">Современная платформа для студентов и преподавателей</p>
         <div class="mt-4">
             <a href="login.php" class="btn btn-light btn-lg me-3">Войти</a>
@@ -55,7 +55,7 @@
 
 <!-- Подвал -->
 <footer>
-    &copy; 2026 Учёба.Онлайн. Образование будущего.
+    &copy; 2026 Учеба24. Образование будущего.
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

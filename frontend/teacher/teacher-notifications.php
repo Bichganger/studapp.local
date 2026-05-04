@@ -15,7 +15,7 @@ $currentDate = date("j F Y");
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Уведомления — Кабинет преподавателя — Учёба.Онлайн</title>
+    <title>Уведомления — Кабинет преподавателя — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -82,13 +82,16 @@ $currentDate = date("j F Y");
 <!-- Боковое меню -->
 <div class="sidebar">
     <div class="text-center mb-4">
-        <h5><i class="bi bi-mortarboard"></i> Учёба.Онлайн</h5>
+        <h5><i class="bi bi-mortarboard"></i> Учеба24</h5>
         <p class="text-white-50 small">Преподаватель</p>
     </div>
     <nav>
         <a href="teacher.php"><i class="bi bi-house me-2"></i>Главная</a>
         <a href="teacher-schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a>
-        <a href="teacher-grades.php"><i class="bi bi-graph-up me-2"></i>����������� ������</a>`n        <a href="teacher-journal.php"><i class="bi bi-journal-text me-2"></i>������</a>`n        <a href="teacher-assignments.php"><i class="bi bi-journal-check me-2"></i>������ ���������</a>`n        <a href="teacher-groups.php""><i class="bi bi-people-fill me-2"></i>Мои группы</a>
+        <a href="teacher-journal.php"><i class="bi bi-journal-text me-2"></i>Журнал</a>
+        <a href="teacher-grades.php"><i class="bi bi-graph-up me-2"></i>Выставление оценок</a>
+        <a href="teacher-assignments.php"><i class="bi bi-journal-check me-2"></i>Работы студентов</a>
+        <a href="teacher-groups.php"><i class="bi bi-people-fill me-2"></i>Мои группы</a>
         <a href="teacher-notifications.php" class="active"><i class="bi bi-bell me-2"></i>Уведомления</a>
         <hr class="mx-3">
         <a href="../logout.php" class="text-danger"><i class="bi bi-arrow-left me-2"></i>Выход</a>
@@ -291,11 +294,12 @@ $currentDate = date("j F Y");
 </main>
 
 <!-- Подвал -->
-<footer>&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer>&copy; 2026 Учеба24</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 
 

@@ -18,7 +18,7 @@ $roleLabel = match($role) {
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Настройки — Учёба.Онлайн</title>
+    <title>Настройки — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -52,7 +52,7 @@ $roleLabel = match($role) {
     <a href="dashboard.php" class="btn btn-link mt-3"><i class="bi bi-arrow-left"></i> Назад</a>
 </div>
 
-<footer class="footer">&copy; 2026 Учёба.Онлайн. Образование будущего.</footer>
+<footer class="footer">&copy; 2026 Учеба24</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
