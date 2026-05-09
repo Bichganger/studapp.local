@@ -21,7 +21,7 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
         body { background: #f8f9fa; font-family: sans-serif; }
         .sidebar {
             min-height: 100vh;
-            background: #0d6efd;
+            background: #1a237e;
             color: white;
             position: fixed;
             width: 260px;
@@ -38,8 +38,15 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
             text-decoration: none;
         }
         .sidebar a:hover, .sidebar a.active {
-            background: #0b5ed7;
+            background: #283593;
             color: white;
+        }
+        .sidebar a.text-danger {
+            background: #c62828;
+            color: white !important;
+        }
+        .sidebar a.text-danger:hover {
+            background: #b71c1c;
         }
         .main-content {
             margin-left: 260px;
@@ -47,16 +54,6 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
         }
         footer { margin-left: 260px; padding: 20px; text-align: center; font-size: 0.9rem; color: #6c757d; }
         .card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .work-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-        }
-        .work-card:hover { transform: translateY(-2px); transition: transform 0.2s; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>

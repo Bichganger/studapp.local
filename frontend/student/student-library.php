@@ -21,7 +21,7 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
         body { background: #f8f9fa; font-family: sans-serif; }
         .sidebar {
             min-height: 100vh;
-            background: #0d6efd;
+            background: #1a237e;
             color: white;
             position: fixed;
             width: 260px;
@@ -38,8 +38,15 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
             text-decoration: none;
         }
         .sidebar a:hover, .sidebar a.active {
-            background: #0b5ed7;
+            background: #283593;
             color: white;
+        }
+        .sidebar a.text-danger {
+            background: #c62828;
+            color: white !important;
+        }
+        .sidebar a.text-danger:hover {
+            background: #b71c1c;
         }
         .main-content {
             margin-left: 260px;

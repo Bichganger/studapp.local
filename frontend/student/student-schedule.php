@@ -21,7 +21,7 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
         body { background: #f8f9fa; font-family: sans-serif; }
         .sidebar {
             min-height: 100vh;
-            background: #0d6efd;
+            background: #1a237e;
             color: white;
             position: fixed;
             width: 260px;
@@ -38,8 +38,15 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
             text-decoration: none;
         }
         .sidebar a:hover, .sidebar a.active {
-            background: #0b5ed7;
+            background: #283593;
             color: white;
+        }
+        .sidebar a.text-danger {
+            background: #c62828;
+            color: white !important;
+        }
+        .sidebar a.text-danger:hover {
+            background: #b71c1c;
         }
         .main-content {
             margin-left: 260px;
@@ -47,36 +54,6 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
         }
         footer { margin-left: 260px; padding: 20px; text-align: center; font-size: 0.9rem; color: #6c757d; }
         .card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .day-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        .day-header {
-            background: #f1f3f5;
-            padding: 12px 16px;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .lesson-item {
-            padding: 14px 16px;
-            border-bottom: 1px dashed #dee2e6;
-        }
-        .lesson-item:last-child { border-bottom: none; }
-        .lesson-time { font-weight: 600; color: #495057; }
-        .lesson-type {
-            font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-        }
-        .lecture { background: #d1ecf1; color: #0c5460; }
-        .practice { background: #d4edda; color: #155724; }
-        .lab { background: #fff3cd; color: #856404; }
-        .seminar { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>

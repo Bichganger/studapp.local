@@ -23,8 +23,8 @@
         <h1><i class="bi bi-journal-code"></i> Учеба24</h1>
         <p class="lead">Современная платформа для студентов и преподавателей</p>
         <div class="mt-4">
-            <a href="login.php" class="btn btn-light btn-lg me-3">Войти</a>
-            <a href="register.php" class="btn btn-custom btn-lg">Регистрация</a>
+            <a href="login_new.php" class="btn btn-light btn-lg me-3">Войти</a>
+            <a href="register_new.php" class="btn btn-custom btn-lg">Регистрация</a>
         </div>
     </div>
 </header>
