@@ -96,7 +96,7 @@ $is_teacher = $_SESSION['role'] === 'teacher';
                 <li class="nav-item"><a class="nav-link" href="distance-learning.php"><i class="bi bi-laptop me-1"></i>Дистанционка</a></li>
                 <li class="nav-item"><a class="nav-link" href="grades.php"><i class="bi bi-graph-up me-1"></i>Успеваемость</a></li>
                 <?php if ($is_admin): ?>
-                    <li class="nav-item"><a class="nav-link" href="admin-panel.php"><i class="bi bi-shield-lock me-1"></i>Админка</a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin/admin-dashboard.php"><i class="bi bi-shield-lock me-1"></i>Админка</a></li>
                 <?php endif; ?>
             </ul>
             <ul class="navbar-nav d-flex align-items-center">

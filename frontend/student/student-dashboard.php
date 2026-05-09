@@ -11,10 +11,6 @@ $fullName = htmlspecialchars($_SESSION['full_name']);
 $username = htmlspecialchars($_SESSION['username']);
 $currentDate = date("j F Y");
 
-// Умное извлечение имени
-$parts = explode(' ', trim($fullName));
-$shortName = $parts[0] ?? $fullName;
-
 // Умное приветствие по времени
 $hour = (int)date('H');
 if ($hour >= 5 && $hour < 12) {
@@ -122,7 +118,7 @@ if ($hour >= 5 && $hour < 12) {
 <main class="main-content">
     <!-- Приветствие -->
     <div class="neural-fade-in mb-4">
-        <h2 class="neural-greeting" style="font-size: 2.5rem;"><?= $timeGreeting ?>, <?= $shortName ?>! 🎓</h2>
+        <h2 class="neural-greeting" style="font-size: 2.5rem;"><?= $timeGreeting ?>, <?= $fullName ?>! 🎓</h2>
         <p class="text-muted fs-5">Добро пожаловать в личный кабинет</p>
         <small class="text-muted"><i class="bi bi-calendar me-1"></i><?= $currentDate ?></small>
     </div>

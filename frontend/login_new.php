@@ -58,7 +58,7 @@
 
         <div class="text-center">
             <small class="text-muted">Нет аккаунта? 
-                <a href="register.php" class="text-decoration-none fw-bold" style="color: #667eea;">Зарегистрироваться</a>
+                <a href="register_new.php" class="text-decoration-none fw-bold" style="color: #667eea;">Зарегистрироваться</a>
             </small>
         </div>
         

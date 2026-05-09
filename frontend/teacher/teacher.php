@@ -7,8 +7,8 @@ if ($_SESSION['role'] !== 'teacher') {
     exit;
 }
 
-$name = explode(' ', $_SESSION['full_name'])[0] ?? $_SESSION['full_name'];
-$fullName = htmlspecialchars($_SESSION['full_name']);
+$name = htmlspecialchars($_SESSION['full_name']);
+$fullName = $name;
 $currentDate = date("j F Y");
 ?>
 <!DOCTYPE html>
@@ -18,45 +18,95 @@ $currentDate = date("j F Y");
     <title>Кабинет преподавателя — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/neural-network.css">
     <style>
-        body { background: #f8f9fa; font-family: sans-serif; }
+        body { 
+            background: #f8f9fa; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
         .sidebar {
             min-height: 100vh;
-            background: #343a40;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             color: white;
             position: fixed;
             width: 260px;
             left: 0;
             top: 0;
             padding: 20px 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+        .sidebar-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            margin-bottom: 20px;
         }
         .sidebar a {
-            color: rgba(255, 255, 255, 0.8);
-            margin: 5px 10px;
-            border-radius: 5px;
+            color: #6c757d;
+            margin: 8px 15px;
+            border-radius: 12px;
             display: block;
-            padding: 8px 15px;
+            padding: 12px 20px;
             text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
         }
         .sidebar a:hover, .sidebar a.active {
-            background: #495057;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+        .sidebar a.text-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545 !important;
+        }
+        .sidebar a.text-danger:hover {
+            background: rgba(220, 53, 69, 0.2);
         }
         .main-content {
             margin-left: 260px;
             padding: 30px;
+            position: relative;
+            z-index: 1;
         }
-        footer { margin-left: 260px; padding: 20px; text-align: center; font-size: 0.9rem; color: #6c757d; }
+        .top-bar {
+            margin-left: 260px; 
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-radius: 15px;
+        }
+        footer { 
+            margin-left: 260px; 
+            padding: 20px; 
+            text-align: center; 
+            font-size: 0.9rem; 
+            color: #6c757d;
+            position: relative;
+            z-index: 1;
+        }
         .card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* Цвета для преподавателя */
+        .role-teacher .neural-bg {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
     </style>
 </head>
-<body>
+<body class="role-teacher">
+    <!-- Живой фон -->
+    <div class="neural-bg"></div>
+    <canvas id="neuralNetworkCanvas"></canvas>
 
 <!-- Боковое меню -->
 <div class="sidebar">
-    <div class="text-center mb-4">
-        <h5><i class="bi bi-mortarboard"></i> Учеба24</h5>
-        <p class="text-white-50 small">Преподаватель</p>
+    <div class="sidebar-header text-center">
+        <h4 class="mb-0"><i class="bi bi-mortarboard"></i> Учеба24</h4>
+        <p class="text-white-50 small mb-0">Кабинет преподавателя</p>
     </div>
     <nav>
         <a href="teacher.php" class="active"><i class="bi bi-house me-2"></i>Главная</a>
@@ -67,14 +117,21 @@ $currentDate = date("j F Y");
         <a href="teacher-groups.php"><i class="bi bi-people-fill me-2"></i>Мои группы</a>
         <a href="teacher-notifications.php"><i class="bi bi-bell me-2"></i>Уведомления</a>
         <hr class="mx-3">
-        <a href="../logout.php" class="text-danger"><i class="bi bi-arrow-left me-2"></i>Выход</a>
+        <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
     </nav>
 </div>
 
-<!-- Основной контент -->
-<main class="main-content">
-    <h2><i class="bi bi-house"></i> Добро пожаловать, <?= $name ?>!</h2>
-    <p class="text-muted">Это ваша главная панель управления. Выберите раздел в меню слева.</p>
+<!-- Верхняя панель -->
+<div class="main-content">
+    <div class="top-bar neural-fade-in">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-house text-primary me-2"></i>Кабинет преподавателя</h4>
+            <p class="mb-0 text-muted mt-1">Добро пожаловать, <strong><?= $name ?></strong>!</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-danger"><?= $currentDate ?></span>
+        </div>
+    </div>
 
     <!-- Быстрые действия -->
     <h5 class="mt-4 mb-3">Быстрый доступ</h5>
@@ -183,12 +240,18 @@ $currentDate = date("j F Y");
             </div>
         </div>
     </div>
-</main>
+</div>
 
 <!-- Подвал -->
-<footer>&copy; 2026 Учеба24</footer>
+<footer>
+    <div class="container">
+        <p class="mb-0">&copy; 2026 <strong>Учеба24</strong> | Платформа образования будущего</p>
+        <small class="text-muted">Кабинет преподавателя v1.0</small>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/neural-network.js"></script>
 </body>
 </html>
 

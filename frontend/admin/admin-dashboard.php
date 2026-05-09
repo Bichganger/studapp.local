@@ -7,8 +7,8 @@ if ($_SESSION['role'] !== 'admin') {
     exit;
 }
 
-$name = explode(' ', $_SESSION['full_name'])[0] ?? $_SESSION['full_name'];
-$fullName = htmlspecialchars($_SESSION['full_name']);
+$name = htmlspecialchars($_SESSION['full_name']);
+$fullName = $name;
 $currentDate = date("j F Y");
 
 require_once '../config/db.php';
@@ -26,9 +26,10 @@ try {
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Панель администратора — Учеба24</title>
+    <title>Админ-панель — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../css/neural-network.css">
     <style>
         body { background: #f8f9fa; font-family: sans-serif; }
         .sidebar {
@@ -41,6 +42,11 @@ try {
             top: 0;
             padding: 20px 0;
         }
+        .sidebar-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
         .sidebar a {
             color: rgba(255, 255, 255, 0.8);
             margin: 5px 10px;
@@ -48,26 +54,46 @@ try {
             display: block;
             padding: 8px 15px;
             text-decoration: none;
+            transition: all 0.3s;
         }
         .sidebar a:hover, .sidebar a.active {
             background: #34495e;
             color: white;
+            transform: translateX(5px);
         }
         .main-content {
             margin-left: 260px;
             padding: 30px;
         }
+        .top-bar {
+            margin-left: 260px;
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         footer { margin-left: 260px; padding: 20px; text-align: center; font-size: 0.9rem; color: #6c757d; }
         .card { border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        /* Цвета для админки */
+        .role-admin .neural-bg {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
     </style>
 </head>
-<body>
+<body class="role-admin">
+    <!-- Живой фон (опционально) -->
+    <div class="neural-bg"></div>
+    <canvas id="neuralNetworkCanvas"></canvas>
 
 <!-- Боковое меню -->
 <div class="sidebar">
-    <div class="text-center mb-4">
-        <h5><i class="bi bi-shield-lock"></i> Админка</h5>
-        <p class="text-white-50 small">Доступ: полный</p>
+    <div class="sidebar-header text-center">
+        <h4 class="mb-0"><i class="bi bi-journal-code"></i> Учеба24</h4>
+        <p class="text-white-50 small mb-0">Админ-панель</p>
     </div>
     <nav>
         <a href="admin-dashboard.php" class="active"><i class="bi bi-house me-2"></i>Главная</a>
@@ -82,11 +108,19 @@ try {
     </nav>
 </div>
 
+<!-- Верхняя панель -->
+<div class="top-bar neural-fade-in">
+    <div>
+        <h4 class="mb-0"><i class="bi bi-shield-lock text-primary me-2"></i>Панель администратора</h4>
+        <p class="mb-0 text-muted mt-1">Добро пожаловать, <strong><?= $name ?></strong>!</p>
+    </div>
+    <div class="text-end">
+        <span class="badge bg-primary"><?= $currentDate ?></span>
+    </div>
+</div>
+
 <!-- Основной контент -->
 <main class="main-content">
-    <h2><i class="bi bi-shield-lock"></i> Панель администратора</h2>
-    <p class="text-muted">Добро пожаловать, <?= $name ?>!</p>
-
     <!-- Статистика -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
@@ -188,8 +222,14 @@ try {
 </main>
 
 <!-- Подвал -->
-<footer>&copy; 2026 Учеба24</footer>
+<footer>
+    <div class="container">
+        <p class="mb-0">&copy; 2026 <strong>Учеба24</strong> | Платформа образования будущего</p>
+        <small class="text-muted">Админ-панель v1.0</small>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/neural-network.js"></script>
 </body>
 </html>

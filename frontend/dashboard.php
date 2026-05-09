@@ -2,8 +2,8 @@
 session_start();
 require_once 'protected/auth_guard.php';
 
-$name = explode(' ', $_SESSION['full_name'])[0] ?? $_SESSION['full_name'];
-$fullName = htmlspecialchars($_SESSION['full_name']);
+$name = htmlspecialchars($_SESSION['full_name']);
+$fullName = $name;
 $username = htmlspecialchars($_SESSION['username']);
 $role = $_SESSION['role'];
 
@@ -32,10 +32,14 @@ $currentDate = date("j F Y");
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
         }
-        .navbar-brand { font-weight: 600; }
+        .navbar {
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%) !important;
+        }
+        .navbar-brand { font-weight: 700; font-size: 1.4rem; }
         .card {
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -46,16 +50,23 @@ $currentDate = date("j F Y");
         .footer { margin-top: 60px; text-align: center; font-size: 0.9rem; color: #6c757d; padding: 20px 0; }
         .profile-img {
             width: 50px; height: 50px; border-radius: 50%;
-            background: #0d6efd; color: white; display: flex;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex;
             align-items: center; justify-content: center;
             font-size: 1.2rem; font-weight: bold;
+        }
+        .welcome-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
         }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="dashboard.php"><i class="bi bi-journal-code"></i> Учеба24</a>
+        <a class="navbar-brand fw-bold" href="dashboard.php">
+            <i class="bi bi-journal-code"></i> Учеба24
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -93,10 +104,10 @@ $currentDate = date("j F Y");
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8">
-            <div class="p-4 bg-white rounded shadow-sm mb-4">
-                <h3><i class="bi bi-person-circle text-primary"></i> Добро пожаловать, <?= $name ?>!</h3>
-                <p class="text-muted">Вы вошли как <strong><?= $roleLabel ?></strong></p>
-                <p class="small text-muted">Дата входа: <?= $currentDate ?></p>
+            <div class="p-4 welcome-card rounded shadow-sm mb-4">
+                <h3><i class="bi bi-person-circle"></i> Добро пожаловать, <?= $name ?>!</h3>
+                <p>Вы вошли как <strong><?= $roleLabel ?></strong></p>
+                <p class="small opacity-75">Дата входа: <?= $currentDate ?></p>
             </div>
             <div class="row g-4">
                 <?php if ($role === 'teacher'): ?>
@@ -134,7 +145,7 @@ $currentDate = date("j F Y");
                             <div class="card-body text-center">
                                 <i class="bi bi-shield-lock card-icon text-danger"></i>
                                 <h5>Админ-панель</h5>
-                                <p class="text-muted>Управление системой</p>
+                                <p class="text-muted">Управление системой</p>
                             </div>
                         </a>
                     </div>
