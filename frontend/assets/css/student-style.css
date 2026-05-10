@@ -1,0 +1,92 @@
+/* Студенческая тема - зелёная */
+body {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+
+.sidebar {
+    min-height: 100vh;
+    background: #1a202c;
+    color: white;
+    position: fixed;
+    width: 240px;
+    left: 0;
+    top: 0;
+    padding: 0;
+}
+
+.sidebar-header {
+    background: #0d1b2a;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 3px solid #38ef7d;
+}
+
+.sidebar-header h5 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.sidebar-header small {
+    color: #38ef7d;
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9rem;
+}
+
+.sidebar a {
+    color: #d8dee9;
+    margin: 5px 10px;
+    border-radius: 5px;
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.sidebar a:hover, .sidebar a.active {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    transform: translateX(5px);
+}
+
+.main-content {
+    margin-left: 240px;
+    padding: 20px;
+}
+
+footer {
+    margin-left: 240px;
+    padding: 15px;
+    text-align: center;
+    color: #e2e8f0;
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border: none;
+    transition: transform 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.welcome-card {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+    border: none;
+}

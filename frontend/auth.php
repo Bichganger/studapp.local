@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
-        header("Location: login.php?error=Заполните все поля");
+        header("Location: dashboard.php?error=Заполните все поля");
         exit;
     }
 
@@ -24,28 +24,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             switch ($user['role']) {
                 case 'admin':
-                    header("Location: admin/admin-dashboard.php");
+                    header("Location: roles/admin/dashboard.php");
                     break;
                 case 'teacher':
-                    header("Location: teacher/teacher.php");
+                    header("Location: roles/teacher/panel.php");
                     break;
                 case 'student':
-                    header("Location: student/student-dashboard.php");
+                    header("Location: roles/student/panel.php");
                     break;
                 default:
                     header("Location: dashboard.php");
             }
             exit;
         } else {
-            header("Location: login.php?error=Неверный логин или пароль");
+            header("Location: dashboard.php?error=Неверный логин или пароль");
             exit;
         }
     } catch (Exception $e) {
-        header("Location: login.php?error=Ошибка сервера");
+        header("Location: dashboard.php?error=Ошибка сервера");
         exit;
     }
 } else {
-    header("Location: login_new.php");
+    header("Location: dashboard.php");
     exit;
 }
 ?>
