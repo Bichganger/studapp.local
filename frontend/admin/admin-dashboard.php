@@ -18,12 +18,12 @@ $name = htmlspecialchars($_SESSION['full_name']);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: sans-serif; }
-        .sidebar { min-height: 100vh; background: #1a202c; color: white; position: fixed; width: 240px; left: 0; top: 0; }
-        .sidebar-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2); }
-        .sidebar-header h5 { color: white; font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); margin: 0; }
-        .sidebar-header small { color: rgba(255,255,255,0.9); display: block; margin-top: 5px; }
-        .sidebar a { color: #cbd5e0; margin: 5px 10px; border-radius: 5px; display: block; padding: 10px 15px; text-decoration: none; transition: all 0.3s; }
-        .sidebar a:hover, .sidebar a.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transform: translateX(5px); }
+        .sidebar { min-height: 100vh; background: #1a202c; color: white; position: fixed; width: 240px; left: 0; top: 0; padding: 0; }
+        .sidebar-header { background: #0d1b2a; padding: 20px; text-align: center; border-bottom: 3px solid #f093fb; }
+        .sidebar-header h5 { color: #fff; font-weight: 700; font-size: 1.3rem; margin: 0; }
+        .sidebar-header small { color: #f093fb; display: block; margin-top: 5px; font-size: 0.9rem; }
+        .sidebar a { color: #d8dee9; margin: 5px 10px; border-radius: 5px; display: block; padding: 10px 15px; text-decoration: none; transition: all 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: #667eea; color: white; transform: translateX(5px); }
         .main-content { margin-left: 240px; padding: 20px; }
         footer { margin-left: 240px; padding: 15px; text-align: center; color: #e2e8f0; }
         .card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: none; transition: transform 0.3s; }
