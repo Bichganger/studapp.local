@@ -74,9 +74,9 @@ $currentDate = date("j F Y");
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link active" href="dashboard.php"><i class="bi bi-house-door me-1"></i>Главная</a></li>
                 <?php if ($role === 'teacher'): ?>
-                    <li class="nav-item"><a class="nav-link" href="teacher/teacher.php"><i class="bi bi-calendar me-1"></i>Кабинет преподавателя</a></li>
+                    <li class="nav-item"><a class="nav-link" href="teacher-panel.php"><i class="bi bi-calendar me-1"></i>Кабинет преподавателя</a></li>
                 <?php elseif ($role === 'student'): ?>
-                    <li class="nav-item"><a class="nav-link" href="student/student-schedule.php"><i class="bi bi-calendar-event me-1"></i>Расписание</a></li>
+                    <li class="nav-item"><a class="nav-link" href="student-panel.php"><i class="bi bi-calendar-event me-1"></i>Кабинет студента</a></li>
                 <?php elseif ($role === 'admin'): ?>
                     <li class="nav-item"><a class="nav-link" href="admin/admin-dashboard.php"><i class="bi bi-shield-lock me-1"></i>Админка</a></li>
                 <?php endif; ?>
@@ -112,26 +112,26 @@ $currentDate = date("j F Y");
             <div class="row g-4">
                 <?php if ($role === 'teacher'): ?>
                     <div class="col-md-6">
-                        <a href="teacher/teacher.php" class="card text-decoration-none text-reset h-100">
+                        <a href="teacher-panel.php" class="card text-decoration-none text-reset h-100">
                             <div class="card-body text-center">
-                                <i class="bi bi-mortarboard card-icon text-success"></i>
+                                <i class="bi bi-person-badge card-icon text-info"></i>
                                 <h5>Кабинет преподавателя</h5>
-                                <p class="text-muted">Перейти в личный кабинет</p>
+                                <p class="text-muted">Журнал, оценки, группы</p>
                             </div>
                         </a>
                     </div>
                 <?php elseif ($role === 'student'): ?>
                     <div class="col-md-6">
-                        <a href="student/student-dashboard.php" class="card text-decoration-none text-reset h-100">
+                        <a href="student-panel.php" class="card text-decoration-none text-reset h-100">
                             <div class="card-body text-center">
-                                <i class="bi bi-calendar-event card-icon text-primary"></i>
-                                <h5>Расписание</h5>
-                                <p class="text-muted">Посмотреть пары на неделю</p>
+                                <i class="bi bi-mortarboard card-icon text-success"></i>
+                                <h5>Кабинет студента</h5>
+                                <p class="text-muted">Расписание, оценки, задания</p>
                             </div>
                         </a>
                     </div>
                     <div class="col-md-6">
-                        <a href="student/student-grades.php" class="card text-decoration-none text-reset h-100">
+                        <a href="student/grades.php" class="card text-decoration-none text-reset h-100">
                             <div class="card-body text-center">
                                 <i class="bi bi-graph-up card-icon text-success"></i>
                                 <h5>Успеваемость</h5>
