@@ -1,1 +1,5 @@
-<?php header("Location: student-dashboard.php"); exit; ?>
+<?php
+header("Location: ../student-panel.php");
+exit;
+?>
+

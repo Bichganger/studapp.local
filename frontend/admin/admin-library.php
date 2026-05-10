@@ -17,14 +17,21 @@ $name = htmlspecialchars($_SESSION['full_name']);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { background: #f8f9fa; font-family: sans-serif; }
-        .sidebar { min-height: 100vh; background: #343a40; color: white; position: fixed; width: 240px; left: 0; top: 0; padding: 0; }
-        .sidebar-header { background: #007bff; padding: 20px; text-align: center; }
-        .sidebar a { color: #adb5bd; margin: 5px 10px; border-radius: 5px; display: block; padding: 10px 15px; text-decoration: none; }
-        .sidebar a:hover, .sidebar a.active { background: #007bff; color: white; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: sans-serif; }
+        .sidebar { min-height: 100vh; background: #1a202c; color: white; position: fixed; width: 240px; left: 0; top: 0; padding: 0; }
+        .sidebar-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2); }
+        .sidebar-header h5 { color: white; font-weight: 700; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); margin: 0; }
+        .sidebar-header small { color: rgba(255,255,255,0.9); display: block; margin-top: 5px; }
+        .sidebar a { color: #cbd5e0; margin: 5px 10px; border-radius: 5px; display: block; padding: 10px 15px; text-decoration: none; transition: all 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; transform: translateX(5px); }
         .main-content { margin-left: 240px; padding: 20px; }
-        footer { margin-left: 240px; padding: 15px; text-align: center; font-size: 0.85rem; color: #6c757d; }
-        .card { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        footer { margin-left: 240px; padding: 15px; text-align: center; font-size: 0.85rem; color: #e2e8f0; }
+        .card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: none; transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+        .btn-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border: none; }
+        .btn-danger { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); border: none; }
+        table { background: rgba(255,255,255,0.95); }
     </style>
 </head>
 <body>

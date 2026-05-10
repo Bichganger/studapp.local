@@ -1,1 +1,5 @@
-<?php header("Location: admin-dashboard.php"); exit; ?>
+<?php
+header("Location: admin-dashboard.php");
+exit;
+?>
+

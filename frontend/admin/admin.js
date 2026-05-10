@@ -1,7 +1,5 @@
-// простой JS для админки
-// сделал студент
+// js для админки
 
-// уведомления
 function showMsg(text, type) {
     const div = document.createElement('div');
     div.className = 'alert alert-' + (type == 'error' ? 'danger' : 'success') + ' alert-dismissible fade show';
@@ -10,6 +8,257 @@ function showMsg(text, type) {
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 3000);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+
+function loadUsers() {
+    fetch('api.php?action=get_users')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.querySelector('#usersTable tbody');
+            if (!tbody) return;
+            tbody.innerHTML = data.users.map(u => `
+                <tr>
+                    <td>${u.full_name || ''}</td>
+                    <td>${u.username || ''}</td>
+                    <td>${u.role == 'admin' ? 'Админ' : u.role == 'teacher' ? 'Преподаватель' : 'Студент'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="delUser(${u.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function addUser() {
+    const form = document.getElementById('addUserForm');
+    const formData = new FormData(form);
+    fetch('api.php?action=add_user', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showMsg('Пользователь добавлен', 'success');
+                form.reset();
+                loadUsers();
+            } else {
+                showMsg('Ошибка', 'error');
+            }
+        });
+}
+
+function delUser(id) {
+    if (!confirm('Удалить?')) return;
+    fetch('api.php?action=delete_user&id=' + id)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) loadUsers();
+        });
+}
+
+function loadGroups() {
+    fetch('api.php?action=get_groups')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.querySelector('#groupsTable tbody');
+            if (!tbody) return;
+            tbody.innerHTML = data.groups.map(g => `
+                <tr>
+                    <td>${g.group_name || ''}</td>
+                    <td>${g.specialty || ''}</td>
+                    <td>${g.course || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="delGroup(${g.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function addGroup() {
+    const form = document.getElementById('addGroupForm');
+    const formData = new FormData(form);
+    fetch('api.php?action=add_group', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showMsg('Группа добавлена', 'success');
+                form.reset();
+                loadGroups();
+            } else {
+                showMsg('Ошибка', 'error');
+            }
+        });
+}
+
+function delGroup(id) {
+    if (!confirm('Удалить?')) return;
+    fetch('api.php?action=delete_group&id=' + id)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) loadGroups();
+        });
+}
+
+function loadSchedule() {
+    fetch('api.php?action=get_schedule')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.querySelector('#scheduleTable tbody');
+            if (!tbody) return;
+            tbody.innerHTML = data.schedule.map(s => `
+                <tr>
+                    <td>${s.day || ''}</td>
+                    <td>${s.group_name || ''}</td>
+                    <td>${s.subject || ''}</td>
+                    <td>${s.time_start || ''}</td>
+                    <td>${s.type || ''}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="delSchedule(${s.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function addSchedule() {
+    const form = document.getElementById('addScheduleForm');
+    const formData = new FormData(form);
+    fetch('api.php?action=add_schedule', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showMsg('Пара добавлена', 'success');
+                form.reset();
+                loadSchedule();
+            } else {
+                showMsg('Ошибка', 'error');
+            }
+        });
+}
+
+function delSchedule(id) {
+    if (!confirm('Удалить?')) return;
+    fetch('api.php?action=delete_schedule&id=' + id)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) loadSchedule();
+        });
+}
+
+function loadLibrary() {
+    fetch('api.php?action=get_library')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.querySelector('#libraryTable tbody');
+            if (!tbody) return;
+            tbody.innerHTML = data.works.map(w => `
+                <tr>
+                    <td>${w.title || ''}</td>
+                    <td>${w.student_name || ''}</td>
+                    <td>${w.group_name || ''}</td>
+                    <td>${w.status == 'approved' ? 'Одобрено' : w.status == 'rejected' ? 'Отклонено' : 'Ожидает'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="approveWork(${w.id})">✔</button>
+                        <button class="btn btn-sm btn-danger" onclick="rejectWork(${w.id})">✖</button>
+                        <button class="btn btn-sm btn-danger" onclick="delWork(${w.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('');
+        });
+}
+
+function approveWork(id) {
+    fetch('api.php?action=approve_work&id=' + id)
+        .then(r => r.json())
+        .then(data => { if (data.success) loadLibrary(); });
+}
+
+function rejectWork(id) {
+    fetch('api.php?action=reject_work&id=' + id)
+        .then(r => r.json())
+        .then(data => { if (data.success) loadLibrary(); });
+}
+
+function delWork(id) {
+    if (!confirm('Удалить?')) return;
+    fetch('api.php?action=delete_work&id=' + id)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) loadLibrary();
+        });
+}
+
+function loadNotifications() {
+    fetch('api.php?action=get_notifications')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.querySelector('#notificationsTable tbody');
+            if (!tbody) return;
+            tbody.innerHTML = data.notifications.map(n => `
+                <tr>
+                    <td>${n.title || ''}</td>
+                    <td>${n.message ? n.message.substring(0, 50) + '...' : ''}</td>
+                    <td>${n.target_type || ''}</td>
+                    <td>${n.created_at ? n.created_at.split(' ')[0] : ''}</td>
+                </tr>
+            `).join('');
+        });
+}
+
+function sendNotification() {
+    const form = document.getElementById('sendNotificationForm');
+    const formData = new FormData(form);
+    fetch('api.php?action=send_notification', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showMsg('Уведомление отправлено', 'success');
+                form.reset();
+                loadNotifications();
+            } else {
+                showMsg('Ошибка', 'error');
+            }
+        });
+}
+
+function loadSettings() {
+    fetch('api.php?action=get_settings')
+        .then(r => r.json())
+        .then(data => {
+            if (data.settings.system_name) document.getElementById('system_name').value = data.settings.system_name;
+        });
+}
+
+function saveSettings() {
+    const form = document.getElementById('settingsForm');
+    const formData = new FormData(form);
+    fetch('api.php?action=save_settings', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) showMsg('Сохранено', 'success');
+            else showMsg('Ошибка', 'error');
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('usersTable')) loadUsers();
+    if (document.getElementById('groupsTable')) loadGroups();
+    if (document.getElementById('scheduleTable')) loadSchedule();
+    if (document.getElementById('libraryTable')) loadLibrary();
+    if (document.getElementById('notificationsTable')) loadNotifications();
+    if (document.getElementById('settingsForm')) loadSettings();
+});
 
 // === ПОЛЬЗОВАТЕЛИ ===
 function loadUsers() {

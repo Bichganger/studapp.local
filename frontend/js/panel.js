@@ -1,5 +1,20 @@
-// простой JS для панелей
 
+
+
+// js для панелей
+
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
 
 function showMsg(text, type) {
     const div = document.createElement('div');
@@ -10,7 +25,6 @@ function showMsg(text, type) {
     setTimeout(() => div.remove(), 3000);
 }
 
-// загрузка оценок для студента
 function loadGrades() {
     fetch('admin/api.php?action=get_my_grades')
         .then(r => r.json())
@@ -28,7 +42,6 @@ function loadGrades() {
         });
 }
 
-// загрузка расписания для студента
 function loadSchedule() {
     fetch('admin/api.php?action=get_my_schedule')
         .then(r => r.json())
@@ -47,7 +60,6 @@ function loadSchedule() {
         });
 }
 
-// инициализация
 document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('gradesTable')) loadGrades();
     if (document.getElementById('scheduleTable')) loadSchedule();

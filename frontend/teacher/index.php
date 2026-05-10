@@ -1,1 +1,5 @@
-<?php header("Location: teacher.php"); exit; ?>
+<?php
+header("Location: ../teacher-panel.php");
+exit;
+?>
+
