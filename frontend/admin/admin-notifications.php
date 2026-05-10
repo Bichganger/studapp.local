@@ -99,6 +99,73 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+// Простая функция отправки уведомления
+function sendNotification() {
+    const form = document.getElementById('notifForm');
+    const title = form.querySelector('[name="title"]').value;
+    const message = form.querySelector('[name="message"]').value;
+    const target = form.querySelector('[name="target_type"]').value;
+    
+    if (!title || !message || !target) {
+        alert('Заполните все поля!');
+        return;
+    }
+    
+    const notification = {
+        id: Date.now(),
+        title: title,
+        message: message,
+        target: target,
+        group: null,
+        date: new Date().toLocaleString('ru-RU'),
+        read: false
+    };
+    
+    if (window.Sync) {
+        Sync.addNotification(notification);
+        alert('Уведомление отправлено!');
+        form.reset();
+        loadNotifications();
+    } else {
+        const notifications = localStorage.getItem('sync_notifications') ? 
+            JSON.parse(localStorage.getItem('sync_notifications')) : [];
+        notifications.push(notification);
+        localStorage.setItem('sync_notifications', JSON.stringify(notifications));
+        alert('Уведомление отправлено!');
+        form.reset();
+    }
+}
+
+function loadNotifications() {
+    const notifications = window.Sync ? Sync.getNotifications() : [];
+    const tbody = document.querySelector('#notifTable tbody');
+    if (!tbody) return;
+    
+    if (notifications.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Нет уведомлений</td></tr>';
+        return;
+    }
+    
+    const targetMap = {
+        'all': 'Все',
+        'students': 'Студенты',
+        'teachers': 'Преподаватели',
+        'group': 'Группа'
+    };
+    
+    tbody.innerHTML = notifications.map(notif => `
+        <tr>
+            <td>${notif.date}</td>
+            <td>${notif.title}</td>
+            <td>${targetMap[notif.target] || notif.target}</td>
+            <td>Отправлено</td>
+        </tr>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', loadNotifications);
+</script>
 </body>
 </html>

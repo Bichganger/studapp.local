@@ -96,6 +96,33 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('sync_settings') || '{}');
+    const form = document.getElementById('settingsForm');
+    if (settings.system_name) form.querySelector('[name="system_name"]').value = settings.system_name;
+    if (settings.notification_email) form.querySelector('[name="notification_email"]').value = settings.notification_email;
+    if (settings.timezone) form.querySelector('[name="timezone"]').value = settings.timezone;
+    if (settings.min_password_length) form.querySelector('[name="min_password_length"]').value = settings.min_password_length;
+}
+
+function saveSettings() {
+    const form = document.getElementById('settingsForm');
+    const settings = {
+        system_name: form.querySelector('[name="system_name"]').value,
+        notification_email: form.querySelector('[name="notification_email"]').value,
+        timezone: form.querySelector('[name="timezone"]').value,
+        allow_registration: form.querySelector('[name="allow_registration"]').checked,
+        email_confirmation: form.querySelector('[name="email_confirmation"]').checked,
+        min_password_length: form.querySelector('[name="min_password_length"]').value
+    };
+    
+    localStorage.setItem('sync_settings', JSON.stringify(settings));
+    Sync.showNotification('Настройки сохранены!', 'success');
+}
+
+document.addEventListener('DOMContentLoaded', loadSettings);
+</script>
 </body>
 </html>

@@ -105,6 +105,58 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadGroups() {
+    const groups = Sync.getGroups();
+    const tbody = document.querySelector('#groupsTable tbody');
+    if (!tbody) return;
+    
+    if (groups.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Нет групп</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = groups.map((group, index) => `
+        <tr>
+            <td><strong>${group.name}</strong></td>
+            <td>${group.specialty || '-'}</td>
+            <td>${group.course || '-'}</td>
+            <td>${group.students || 0}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteGroupAdmin(${index})">✗</button></td>
+        </tr>
+    `).join('');
+}
+
+function addGroup() {
+    const form = document.getElementById('addGroupForm');
+    const group = {
+        name: form.querySelector('[name="group_name"]').value,
+        specialty: form.querySelector('[name="specialty"]').value,
+        course: form.querySelector('[name="course"]').value,
+        students: form.querySelector('[name="student_count"]').value,
+        id: Date.now()
+    };
+    
+    if (!group.name) {
+        alert('Введите название группы!');
+        return;
+    }
+    
+    Sync.addGroup(group);
+    form.reset();
+    loadGroups();
+    Sync.showNotification('Группа создана!', 'success');
+}
+
+function deleteGroupAdmin(index) {
+    if (!confirm('Удалить группу?')) return;
+    Sync.deleteGroup(index);
+    loadGroups();
+    Sync.showNotification('Группа удалена', 'warning');
+}
+
+document.addEventListener('DOMContentLoaded', loadGroups);
+</script>
 </body>
 </html>

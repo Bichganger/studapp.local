@@ -51,11 +51,13 @@ $name = htmlspecialchars($_SESSION['full_name']);
                     <tr>
                         <th>Название</th>
                         <th>Тип</th>
+                        <th>Автор</th>
+                        <th>Группа</th>
                         <th>Статус</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="3" class="text-center">загрузка...</td></tr>
+                    <tr><td colspan="5" class="text-center">загрузка...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -64,5 +66,30 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadLibrary() {
+    const library = Sync.getLibrary();
+    const tbody = document.querySelector('#libraryTable tbody');
+    if (!tbody) return;
+    
+    if (library.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Нет материалов</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = library.map(item => `
+        <tr>
+            <td>${item.title}</td>
+            <td><span class="badge bg-info">${item.type}</span></td>
+            <td>${item.student || '-'}</td>
+            <td>${item.group || '-'}</td>
+            <td><span class="badge bg-success">${item.status}</span></td>
+        </tr>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', loadLibrary);
+</script>
 </body>
 </html>

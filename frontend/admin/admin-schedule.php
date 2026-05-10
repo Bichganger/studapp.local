@@ -126,6 +126,63 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadSchedule() {
+    const schedule = Sync.getSchedule();
+    const tbody = document.querySelector('#scheduleTable tbody');
+    if (!tbody) return;
+    
+    if (schedule.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">Нет занятий</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = schedule.map((item, index) => `
+        <tr>
+            <td>${item.day}</td>
+            <td>${item.group}</td>
+            <td>${item.subject}</td>
+            <td>${item.time}</td>
+            <td><span class="badge bg-info">${item.type}</span></td>
+            <td>${item.classroom || '-'}</td>
+            <td>${item.teacher || '-'}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteScheduleAdmin(${index})">✗</button></td>
+        </tr>
+    `).join('');
+}
+
+function addSchedule() {
+    const form = document.getElementById('addScheduleForm');
+    const item = {
+        day: form.querySelector('[name="day"]').value,
+        group: form.querySelector('[name="group"]').value,
+        subject: form.querySelector('[name="subject"]').value,
+        time: `${form.querySelector('[name="time_start"]').value}`,
+        type: form.querySelector('[name="type"]').value,
+        classroom: form.querySelector('[name="classroom"]').value,
+        teacher: form.querySelector('[name="teacher"]').value
+    };
+    
+    if (!item.day || !item.group || !item.subject || !item.time) {
+        alert('Заполните обязательные поля!');
+        return;
+    }
+    
+    Sync.addSchedule(item);
+    form.reset();
+    loadSchedule();
+    Sync.showNotification('Занятие добавлено!', 'success');
+}
+
+function deleteScheduleAdmin(index) {
+    if (!confirm('Удалить занятие?')) return;
+    Sync.deleteSchedule(index);
+    loadSchedule();
+    Sync.showNotification('Занятие удалено', 'warning');
+}
+
+document.addEventListener('DOMContentLoaded', loadSchedule);
+</script>
 </body>
 </html>

@@ -109,6 +109,65 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadUsers() {
+    const users = JSON.parse(localStorage.getItem('sync_users') || '[]');
+    const tbody = document.querySelector('#usersTable tbody');
+    if (!tbody) return;
+    
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Нет пользователей</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = users.map((user, index) => `
+        <tr>
+            <td>${user.full_name}</td>
+            <td>${user.username}</td>
+            <td><span class="badge bg-${user.role === 'admin' ? 'danger' : user.role === 'teacher' ? 'info' : 'primary'}">${user.role}</span></td>
+            <td>${user.email || '-'}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteUser(${index})">✗</button></td>
+        </tr>
+    `).join('');
+}
+
+function addUser() {
+    const form = document.getElementById('addUserForm');
+    const user = {
+        full_name: form.querySelector('[name="full_name"]').value,
+        username: form.querySelector('[name="username"]').value,
+        password: form.querySelector('[name="password"]').value,
+        role: form.querySelector('[name="role"]').value,
+        email: '',
+        id: Date.now()
+    };
+    
+    if (!user.full_name || !user.username || !user.password) {
+        alert('Заполните все поля!');
+        return;
+    }
+    
+    const users = JSON.parse(localStorage.getItem('sync_users') || '[]');
+    users.push(user);
+    localStorage.setItem('sync_users', JSON.stringify(users));
+    
+    form.reset();
+    loadUsers();
+    Sync.showNotification('Пользователь добавлен!', 'success');
+}
+
+function deleteUser(index) {
+    if (!confirm('Удалить пользователя?')) return;
+    
+    const users = JSON.parse(localStorage.getItem('sync_users') || '[]');
+    users.splice(index, 1);
+    localStorage.setItem('sync_users', JSON.stringify(users));
+    loadUsers();
+    Sync.showNotification('Пользователь удалён', 'warning');
+}
+
+document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
 </body>
 </html>

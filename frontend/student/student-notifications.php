@@ -44,7 +44,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
     </div>
 
     <div class="card">
-        <div class="card-header"><h5 class="mb-0"><i class="bi bi-bell"></i> Уведомления</h5></div>
+        <div class="card-header"><h5 class="mb-0"><i class="bi bi-bell"></i> Мои уведомления</h5></div>
         <div class="card-body">
             <table class="table" id="notificationsTable">
                 <thead>
@@ -64,5 +64,28 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadMyNotifications() {
+    const notifications = Sync.getNotificationsForUser('student');
+    const tbody = document.querySelector('#notificationsTable tbody');
+    if (!tbody) return;
+    
+    if (notifications.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = notifications.map(notif => `
+        <tr class="${notif.read ? '' : 'table-active'}">
+            <td><strong>${notif.title}</strong></td>
+            <td>${notif.message}</td>
+            <td>${notif.date}</td>
+        </tr>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', loadMyNotifications);
+</script>
 </body>
 </html>

@@ -55,7 +55,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
                     <tr>
                         <th>Предмет</th>
                         <th>Оценка</th>
-                        <th>Комментарий</th>
+                        <th>Преподаватель</th>
                         <th>Дата</th>
                     </tr>
                 </thead>
@@ -69,6 +69,32 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/panel.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadMyGrades() {
+    const allGrades = Sync.getGrades();
+    const studentName = '<?= $name ?>';
+    const myGrades = allGrades.filter(g => g.student === studentName);
+    
+    const tbody = document.querySelector('#gradesTable tbody');
+    if (!tbody) return;
+    
+    if (myGrades.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">Нет оценок</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = myGrades.map(item => `
+        <tr>
+            <td>${item.subject}</td>
+            <td><span class="badge bg-success">${item.grade}</span></td>
+            <td>${item.teacher || '-'}</td>
+            <td>${item.date}</td>
+        </tr>
+    `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', loadMyGrades);
+</script>
 </body>
 </html>

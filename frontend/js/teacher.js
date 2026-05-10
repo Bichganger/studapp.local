@@ -1,19 +1,21 @@
-// teacher.js - все функции для преподавателя
+// teacher.js - все функции для преподавателя с синхронизацией
 
-// Загрузка данных из localStorage
+// Загрузка данных через Sync
 function loadData(key) {
-    const data = localStorage.getItem('teacher_' + key);
-    return data ? JSON.parse(data) : [];
+    return window.Sync && Sync[key] ? Sync[key]() : [];
 }
 
-// Сохранение данных в localStorage
+// Сохранение данных через Sync
 function saveData(key, data) {
+    if (window.Sync && Sync['set' + key.charAt(0).toUpperCase() + key.slice(1)]) {
+        // Используем синхронизацию если есть
+    }
     localStorage.setItem('teacher_' + key, JSON.stringify(data));
 }
 
 // Расписание
 function loadSchedule() {
-    const schedule = loadData('schedule');
+    const schedule = window.Sync ? Sync.getSchedule() : loadData('schedule');
     const tbody = document.querySelector('#scheduleTable tbody');
     if (!tbody) return;
     
@@ -41,17 +43,22 @@ function addSchedule() {
     const type = prompt('Тип (Лекция/Практика/Лабораторная):');
     
     if (day && group && subject && time && type) {
-        const schedule = loadData('schedule');
-        schedule.push({ day, group, subject, time, type });
-        saveData('schedule', schedule);
+        const item = { day, group, subject, time, type };
+        if (window.Sync) {
+            Sync.addSchedule(item);
+        } else {
+            const schedule = loadData('schedule');
+            schedule.push(item);
+            saveData('schedule', schedule);
+        }
         loadSchedule();
-        alert('Занятие добавлено!');
+        Sync && Sync.showNotification('Занятие добавлено!', 'success');
     }
 }
 
 // Оценки
 function loadGrades() {
-    const grades = loadData('grades');
+    const grades = window.Sync ? Sync.getGrades() : loadData('grades');
     const tbody = document.querySelector('#gradesTable tbody');
     if (!tbody) return;
     
@@ -77,17 +84,24 @@ function addGrade() {
     const date = new Date().toLocaleDateString('ru-RU');
     
     if (student && subject && grade) {
-        const grades = loadData('grades');
-        grades.push({ student, subject, grade, date });
-        saveData('grades', grades);
+        const item = { student, subject, grade, date };
+        if (window.Sync) {
+            Sync.addGrade(item);
+            // Отправить уведомление студенту
+            Sync.sendNotification('Новая оценка', `По предмету ${subject} выставлена оценка ${grade}`, 'students');
+        } else {
+            const grades = loadData('grades');
+            grades.push(item);
+            saveData('grades', grades);
+        }
         loadGrades();
-        alert('Оценка выставлена!');
+        Sync && Sync.showNotification('Оценка выставлена!', 'success');
     }
 }
 
 // Работы студентов
 function loadAssignments() {
-    const assignments = loadData('assignments');
+    const assignments = window.Sync ? Sync.getAssignments() : loadData('assignments');
     const tbody = document.querySelector('#assignmentsTable tbody');
     if (!tbody) return;
     
@@ -111,23 +125,39 @@ function loadAssignments() {
 }
 
 function checkAssignment(index) {
-    const assignments = loadData('assignments');
-    assignments[index].status = 'Одобрено';
-    assignments[index].grade = prompt('Введите оценку:');
-    saveData('assignments', assignments);
-    loadAssignments();
+    const assignments = window.Sync ? Sync.getAssignments() : loadData('assignments');
+    const grade = prompt('Введите оценку:');
+    if (grade) {
+        const data = { status: 'Одобрено', grade: grade };
+        if (window.Sync) {
+            Sync.updateAssignment(index, data);
+            Sync.sendNotification('Работа проверена', `Ваша работа "${assignments[index].title}" одобрена. Оценка: ${grade}`, 'students');
+        } else {
+            assignments[index] = { ...assignments[index], ...data };
+            saveData('assignments', assignments);
+        }
+        loadAssignments();
+        Sync && Sync.showNotification('Работа одобрена!', 'success');
+    }
 }
 
 function rejectAssignment(index) {
-    const assignments = loadData('assignments');
-    assignments[index].status = 'Требует доработки';
-    saveData('assignments', assignments);
+    const assignments = window.Sync ? Sync.getAssignments() : loadData('assignments');
+    const data = { status: 'Требует доработки' };
+    if (window.Sync) {
+        Sync.updateAssignment(index, data);
+        Sync.sendNotification('Работа требует доработки', `Ваша работа "${assignments[index].title}" требует исправлений`, 'students');
+    } else {
+        assignments[index] = { ...assignments[index], ...data };
+        saveData('assignments', assignments);
+    }
     loadAssignments();
+    Sync && Sync.showNotification('Работа отклонена', 'warning');
 }
 
 // Журнал
 function loadJournal() {
-    const journal = loadData('journal');
+    const journal = window.Sync ? Sync.getJournal() : loadData('journal');
     const tbody = document.querySelector('#journalTable tbody');
     if (!tbody) return;
     
@@ -153,17 +183,22 @@ function addJournal() {
     const comment = prompt('Комментарий:');
     
     if (date && group && subject) {
-        const journal = loadData('journal');
-        journal.push({ date, group, subject, comment: comment || '' });
-        saveData('journal', journal);
+        const item = { date, group, subject, comment: comment || '' };
+        if (window.Sync) {
+            Sync.addJournal(item);
+        } else {
+            const journal = loadData('journal');
+            journal.push(item);
+            saveData('journal', journal);
+        }
         loadJournal();
-        alert('Запись добавлена!');
+        Sync && Sync.showNotification('Запись добавлена!', 'success');
     }
 }
 
 // Группы
 function loadGroups() {
-    const groups = loadData('groups');
+    const groups = window.Sync ? Sync.getGroups() : loadData('groups');
     const tbody = document.querySelector('#groupsTable tbody');
     if (!tbody) return;
     
@@ -188,26 +223,36 @@ function addGroup() {
     const students = prompt('Количество студентов:');
     
     if (name && students) {
-        const groups = loadData('groups');
-        groups.push({ name, students });
-        saveData('groups', groups);
+        const item = { name, students };
+        if (window.Sync) {
+            Sync.addGroup(item);
+        } else {
+            const groups = loadData('groups');
+            groups.push(item);
+            saveData('groups', groups);
+        }
         loadGroups();
-        alert('Группа добавлена!');
+        Sync && Sync.showNotification('Группа добавлена!', 'success');
     }
 }
 
 function deleteGroup(index) {
     if (confirm('Удалить группу?')) {
-        const groups = loadData('groups');
-        groups.splice(index, 1);
-        saveData('groups', groups);
+        if (window.Sync) {
+            Sync.deleteGroup(index);
+        } else {
+            const groups = loadData('groups');
+            groups.splice(index, 1);
+            saveData('groups', groups);
+        }
         loadGroups();
     }
 }
 
 // Уведомления
 function loadNotifications() {
-    const notifications = loadData('notifications');
+    const role = document.body.classList.contains('role-student') ? 'student' : 'teacher';
+    const notifications = window.Sync ? Sync.getNotificationsForUser(role) : loadData('notifications');
     const tbody = document.querySelector('#notificationsTable tbody');
     if (!tbody) return;
     
@@ -217,7 +262,7 @@ function loadNotifications() {
     }
     
     tbody.innerHTML = notifications.map((item, index) => `
-        <tr>
+        <tr class="${item.read ? '' : 'table-active'}">
             <td>${item.title}</td>
             <td>${item.message}</td>
             <td>${item.date}</td>
@@ -228,20 +273,25 @@ function loadNotifications() {
 function addNotification() {
     const title = prompt('Заголовок:');
     const message = prompt('Сообщение:');
+    const target = prompt('Кому: all/students/teachers', 'all');
     const date = new Date().toLocaleString('ru-RU');
     
-    if (title && message) {
-        const notifications = loadData('notifications');
-        notifications.push({ title, message, date });
-        saveData('notifications', notifications);
+    if (title && message && target) {
+        const item = { title, message, target, date };
+        if (window.Sync) {
+            Sync.addNotification(item);
+        } else {
+            const notifications = loadData('notifications');
+            notifications.push(item);
+            saveData('notifications', notifications);
+        }
         loadNotifications();
-        alert('Уведомление создано!');
+        Sync && Sync.showNotification('Уведомление создано!', 'success');
     }
 }
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    // Автоматически загружаем данные для текущей страницы
     const path = window.location.pathname;
     
     if (path.includes('schedule.php')) loadSchedule();
@@ -250,4 +300,14 @@ document.addEventListener('DOMContentLoaded', function() {
     else if (path.includes('journal.php')) loadJournal();
     else if (path.includes('groups.php')) loadGroups();
     else if (path.includes('notifications.php')) loadNotifications();
+    
+    // Автообновление при изменениях в других вкладках
+    window.addEventListener('sync-update', function() {
+        if (path.includes('schedule.php')) loadSchedule();
+        else if (path.includes('grades.php')) loadGrades();
+        else if (path.includes('assignments.php')) loadAssignments();
+        else if (path.includes('journal.php')) loadJournal();
+        else if (path.includes('groups.php')) loadGroups();
+        else if (path.includes('notifications.php')) loadNotifications();
+    });
 });

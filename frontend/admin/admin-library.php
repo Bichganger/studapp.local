@@ -57,6 +57,34 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <main class="main-content">
     <h3 class="mb-4">Модерация работ</h3>
     
+    <div class="card mb-4">
+        <div class="card-header">Добавить в библиотеку</div>
+        <div class="card-body">
+            <form id="addLibraryForm" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="title" class="form-control" placeholder="Название работы" required>
+                </div>
+                <div class="col-md-2">
+                    <select name="type" class="form-select">
+                        <option value="лекция">Лекция</option>
+                        <option value="методичка">Методичка</option>
+                        <option value="пример">Пример</option>
+                        <option value="заданием">Задание</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="student" class="form-control" placeholder="Автор (студент)">
+                </div>
+                <div class="col-md-2">
+                    <input type="text" name="group" class="form-control" placeholder="Группа">
+                </div>
+                <div class="col-md-2">
+                    <button type="button" onclick="addLibraryItem()" class="btn btn-success w-100">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <div class="card">
         <div class="card-header">Работы на проверке</div>
         <div class="card-body">
@@ -81,6 +109,62 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="admin.js"></script>
+<script src="../js/sync.js"></script>
+<script>
+function loadLibrary() {
+    const library = Sync.getLibrary();
+    const tbody = document.querySelector('#libraryTable tbody');
+    if (!tbody) return;
+    
+    if (library.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Нет работ</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = library.map((item, index) => `
+        <tr>
+            <td>${item.title}</td>
+            <td><span class="badge bg-info">${item.type}</span></td>
+            <td>${item.student || '-'}</td>
+            <td>${item.group || '-'}</td>
+            <td><span class="badge bg-success">${item.status}</span></td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteLibraryItem(${index})">✗</button></td>
+        </tr>
+    `).join('');
+}
+
+function addLibraryItem() {
+    const form = document.getElementById('addLibraryForm');
+    const item = {
+        title: form.querySelector('[name="title"]').value,
+        type: form.querySelector('[name="type"]').value,
+        student: form.querySelector('[name="student"]').value,
+        group: form.querySelector('[name="group"]').value,
+        status: 'Опубликовано',
+        id: Date.now()
+    };
+    
+    if (!item.title) {
+        alert('Введите название работы!');
+        return;
+    }
+    
+    Sync.addLibrary(item);
+    form.reset();
+    loadLibrary();
+    Sync.showNotification('Работа добавлена в библиотеку!', 'success');
+}
+
+function deleteLibraryItem(index) {
+    if (!confirm('Удалить работу из библиотеки?')) return;
+    const library = Sync.getLibrary();
+    library.splice(index, 1);
+    localStorage.setItem('sync_library', JSON.stringify(library));
+    loadLibrary();
+    Sync.showNotification('Работа удалена', 'warning');
+}
+
+document.addEventListener('DOMContentLoaded', loadLibrary);
+</script>
 </body>
 </html>
