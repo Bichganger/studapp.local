@@ -16,6 +16,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
     <title>Админка — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../assets/css/accessibility.css">
     <style>
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: sans-serif; }
         .sidebar { min-height: 100vh; background: #1a202c; color: white; position: fixed; width: 240px; left: 0; top: 0; padding: 0; }
@@ -112,5 +113,6 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/sync.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 </body>
 </html>

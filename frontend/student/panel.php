@@ -17,6 +17,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../assets/css/student-style.css">
+    <link rel="stylesheet" href="../assets/css/accessibility.css">
 </head>
 <body>
 
@@ -99,5 +100,6 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/sync.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 </body>
 </html>
