@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Если уже вошли - перенаправляем
+// Если уже вошли - перенаправляем по роли
 if (isset($_SESSION['user_id'])) {
     switch ($_SESSION['role']) {
         case 'admin':
@@ -24,55 +24,71 @@ if (isset($_SESSION['user_id'])) {
     <title>Вход — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; }
-        .login-card { max-width: 400px; margin: 0 auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .login-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 15px 15px 0 0; text-align: center; }
-        .login-body { padding: 40px; }
-        .btn-login { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; }
-        .btn-login:hover { opacity: 0.9; }
-    </style>
+    <link rel="stylesheet" href="css/neural-network.css">
 </head>
-<body>
-<div class="container">
-    <div class="login-card">
-        <div class="login-header">
-            <i class="bi bi-journal-code display-4"></i>
-            <h2 class="mt-3 mb-0">Учеба24</h2>
-            <p class="mb-0">Вход в систему</p>
-        </div>
-        <div class="login-body">
-            <?php if (isset($_GET['error'])): ?>
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <?= htmlspecialchars($_GET['error']) ?>
-                </div>
-            <?php endif; ?>
-            
-            <form action="auth.php" method="POST">
-                <div class="mb-3">
-                    <label class="form-label"><i class="bi bi-person-fill me-1"></i>Логин</label>
-                    <input type="text" name="username" class="form-control" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label"><i class="bi bi-key-fill me-1"></i>Пароль</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-login w-100 py-2">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Войти
-                </button>
-            </form>
-            
-            <hr class="my-4">
-            
-            <div class="text-center">
-                <a href="register_new.php" class="text-decoration-none">
-                    <i class="bi bi-person-plus-fill me-1"></i>Регистрация
-                </a>
+<body class="role-student">
+    <!-- Живой фон -->
+    <div class="neural-bg"></div>
+    <canvas id="neuralNetworkCanvas"></canvas>
+    
+    <!-- Карточка входа -->
+    <div class="neural-form neural-fade-in">
+        <div class="text-center mb-4">
+            <div style="font-size: 4rem; animation: iconBounce 2s ease-in-out infinite;">
+                <i class="bi bi-journal-code" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
             </div>
+            <h2 class="neural-greeting" style="font-size: 2rem; margin-top: 10px;">Учеба24</h2>
+            <p class="text-muted">Вход в систему</p>
+        </div>
+
+        <?php if (isset($_GET['error'])): ?>
+            <div class="alert alert-danger neural-alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <?= htmlspecialchars($_GET['error']) ?>
+            </div>
+        <?php endif; ?>
+        
+        <form action="auth.php" method="POST" id="loginForm">
+            <div class="mb-3">
+                <label class="form-label fw-bold"><i class="bi bi-person-badge-fill text-primary me-2"></i>Логин</label>
+                <input type="text" name="username" class="form-control neural-form-input" 
+                       placeholder="ivanov_i" required autocomplete="username" autofocus>
+                <div class="form-text">Ваш уникальный идентификатор</div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label fw-bold"><i class="bi bi-key-fill text-primary me-2"></i>Пароль</label>
+                <input type="password" name="password" class="form-control neural-form-input" 
+                       placeholder="••••••••" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn neural-btn w-100 mb-3" id="submitBtn">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+            </button>
+        </form>
+        
+        <div class="text-center">
+            <small class="text-muted">Нет аккаунта? 
+                <a href="register_new.php" class="text-decoration-none fw-bold" style="color: #667eea;">Зарегистрироваться</a>
+            </small>
+        </div>
+        
+        <div class="mt-4 p-3 rounded" style="background: rgba(102, 126, 234, 0.1);">
+            <small class="text-muted">
+                <i class="bi bi-shield-check me-1"></i>
+                Безопасный вход с шифрованием паролей
+            </small>
         </div>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/neural-network.js"></script>
+    <script>
+        // Эффект при отправке формы
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<span class="neural-loader d-inline-block me-2" style="width:20px;height:20px;border-width:2px;"></span>Вход...';
+        });
+    </script>
 </body>
 </html>

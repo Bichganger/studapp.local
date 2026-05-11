@@ -1,0 +1,10 @@
+/* Admin Panel Styles */
+.sidebar { background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%); }
+.sidebar-header { border-bottom: 3px solid #dc3545; }
+.sidebar-header h5 { color: #fff; }
+.sidebar-header small { color: #dc3545; }
+.sidebar a:hover, .sidebar a.active { background: linear-gradient(90deg, #dc3545 0%, #c82333 100%); }
+.welcome-card { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+.card-header { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+.btn-primary { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); border: none; }
+.btn-success { background: linear-gradient(135deg, #28a745 0%, #218838 100%); border: none; }

@@ -148,5 +148,66 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/sync.js"></script>
 <script src="../assets/js/accessibility.js"></script>
+<script>
+async function loadUsers() {
+    const tbody = document.querySelector('#usersTable tbody');
+    if (!tbody) return;
+    
+    try {
+        const users = await Sync.getUsers();
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Нет пользователей</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.full_name}</td>
+                <td>${user.username}</td>
+                <td><span class="badge bg-${user.role === 'admin' ? 'danger' : user.role === 'teacher' ? 'info' : 'primary'}">${user.role}</span></td>
+                <td>${user.email || '-'}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">✗</button></td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Ошибка загрузки</td></tr>';
+    }
+}
+
+async function addUser() {
+    const form = document.getElementById('addUserForm');
+    const user = {
+        full_name: form.querySelector('[name="full_name"]').value,
+        username: form.querySelector('[name="username"]').value,
+        password: form.querySelector('[name="password"]').value,
+        role: form.querySelector('[name="role"]').value,
+        group_name: null,
+        course: 1
+    };
+    
+    if (!user.full_name || !user.username || !user.password) {
+        alert('Заполните все поля!');
+        return;
+    }
+    
+    const result = await Sync.addUser(user);
+    if (result && result.success) {
+        form.reset();
+        loadUsers();
+        Sync.showNotification('Пользователь добавлен!', 'success');
+    } else {
+        alert('Ошибка добавления пользователя');
+    }
+}
+
+async function deleteUser(id) {
+    if (!confirm('Удалить пользователя?')) return;
+    // Реализовать через API
+    Sync.showNotification('Функция в разработке', 'warning');
+}
+
+document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
 </body>
 </html>

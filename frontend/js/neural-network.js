@@ -50,15 +50,7 @@ class NeuralNetwork {
     bindEvents() {
         window.addEventListener('resize', () => this.resize());
         
-        document.addEventListener('mousemove', (e) => {
-            this.mouseX = e.clientX;
-            this.mouseY = e.clientY;
-        });
-        
-        // Ускорение анимации при клике
-        document.addEventListener('click', (e) => {
-            this.createBurst(e.clientX, e.clientY);
-        });
+        // Удалена анимация курсора для производительности
     }
     
     createBurst(x, y) {
@@ -96,16 +88,7 @@ class NeuralNetwork {
             if (particle.x < 0 || particle.x > this.canvas.width) particle.vx *= -1;
             if (particle.y < 0 || particle.y > this.canvas.height) particle.vy *= -1;
             
-            // Взаимодействие с мышью
-            const dx = this.mouseX - particle.x;
-            const dy = this.mouseY - particle.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < 150) {
-                const force = (150 - distance) / 150;
-                particle.x -= dx * force * 0.02;
-                particle.y -= dy * force * 0.02;
-            }
+            // Удалена анимация от мыши для производительности
             
             // Ограничение скорости
             const speed = Math.sqrt(particle.vx ** 2 + particle.vy ** 2);
@@ -162,23 +145,14 @@ class NeuralNetwork {
     }
     
     getGradient() {
-        const gradient = this.ctx.createRadialGradient(
-            this.mouseX, this.mouseY, 0,
-            this.mouseX, this.mouseY, 200
-        );
-        
+        // Фиксированный градиент без отслеживания мыши
         if (this.role === 'student') {
-            gradient.addColorStop(0, 'rgba(102, 126, 234, 0.8)');
-            gradient.addColorStop(1, 'rgba(118, 75, 162, 0.3)');
+            return 'rgba(102, 126, 234, 0.6)';
         } else if (this.role === 'teacher') {
-            gradient.addColorStop(0, 'rgba(240, 147, 251, 0.8)');
-            gradient.addColorStop(1, 'rgba(245, 87, 108, 0.3)');
+            return 'rgba(240, 147, 251, 0.6)';
         } else {
-            gradient.addColorStop(0, 'rgba(79, 172, 254, 0.8)');
-            gradient.addColorStop(1, 'rgba(0, 242, 254, 0.3)');
+            return 'rgba(79, 172, 254, 0.6)';
         }
-        
-        return gradient;
     }
     
     animate() {
@@ -261,11 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализация нейросети
     new NeuralNetwork();
     
-    // Улучшение приветствия если есть элемент
-    const greetingElement = document.querySelector('.neural-greeting-text');
-    if (greetingElement && greetingElement.dataset.name) {
-        greetingElement.innerHTML = getSmartGreeting(greetingElement.dataset.name);
-    }
+    // Удален параллакс эффект для производительности
     
     // Анимация появления элементов
     const animatedElements = document.querySelectorAll('.neural-fade-in');
@@ -278,24 +248,5 @@ document.addEventListener('DOMContentLoaded', function() {
             el.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s forwards`;
         }, 50);
     });
-    
-    // Эффект частиц при успешных действиях
-    document.querySelectorAll('.neural-btn-success').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            createSuccessParticles(e.clientX, e.clientY);
-        });
-    });
 });
-
-/**
- * Параллакс эффект для карточек
- */
-document.addEventListener('mousemove', function(e) {
-    const cards = document.querySelectorAll('.neural-card');
-    const x = (e.clientX / window.innerWidth - 0.5) * 20;
-    const y = (e.clientY / window.innerHeight - 0.5) * 20;
     
-    cards.forEach(card => {
-        card.style.transform = `perspective(1000px) rotateY(${x}deg) rotateX(${-y}deg)`;
-    });
-});
