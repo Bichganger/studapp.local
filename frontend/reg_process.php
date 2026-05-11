@@ -3,7 +3,7 @@ session_start();
 require_once 'config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: register.php");
+    header("Location: register_new.php");
     exit;
 }
 
@@ -12,78 +12,64 @@ $username = trim($_POST['username']);
 $password = $_POST['password'];
 $password_confirm = $_POST['password_confirm'];
 $group_name = trim($_POST['group_name']);
-$course = (int)$_POST['course'];
-$role = $_POST['role'] ?? 'student';
+$course = intval($_POST['course']);
+$role = 'student';
 
-if (empty($full_name) || empty($username) || empty($password) || empty($group_name)) {
-    header("Location: register.php?error=Заполните все поля");
+// Проверки
+if (empty($full_name) || empty($username) || empty($password)) {
+    header("Location: register_new.php?error=Заполните все обязательные поля");
     exit;
 }
 
 if ($password !== $password_confirm) {
-    header("Location: register.php?error=Пароли не совпадают");
+    header("Location: register_new.php?error=Пароли не совпадают");
     exit;
 }
 
-if ($role !== 'student') {
-    header("Location: register.php?error=Регистрация доступна только студентам");
+if (strlen($password) < 6) {
+    header("Location: register_new.php?error=Пароль должен быть не менее 6 символов");
     exit;
 }
 
 try {
+    // Проверка существования пользователя
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute([$username]);
     if ($stmt->fetch()) {
-        header("Location: register.php?error=Логин уже занят");
+        header("Location: register_new.php?error=Пользователь с таким логином уже существует");
         exit;
     }
 
-    $normalized_name = mb_strtolower(preg_replace('/\s+/', ' ', trim($full_name)), 'UTF-8');
-    $normalized_group = mb_strtoupper(preg_replace('/\s+/', '-', trim($group_name)), 'UTF-8');
+    // Хеширование пароля
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    $stmt = $pdo->prepare("
-        SELECT id, full_name, group_name, course, status 
-        FROM students 
-        WHERE LOWER(REPLACE(full_name, ' ', '')) LIKE ?
-        AND UPPER(REPLACE(group_name, ' ', '')) = ?
-        AND course = ?
-        AND status = 'active'
-        LIMIT 1
-    ");
-    
-    $search_name = '%' . str_replace(' ', '', $normalized_name) . '%';
-    $search_group = str_replace(' ', '', $normalized_group);
-    
-    $stmt->execute([$search_name, $search_group, $course]);
-    $student = $stmt->fetch();
-
-    if (!$student) {
-        header("Location: register.php?error=Студент с такими данными не найден в базе колледжа");
-        exit;
-    }
-
-    $stmt = $pdo->prepare("SELECT user_id FROM student_accounts WHERE student_id = ?");
-    $stmt->execute([$student['id']]);
-    if ($stmt->fetch()) {
-        header("Location: register.php?error=Этот студент уже зарегистрирован в системе");
-        exit;
-    }
-
-    $hashed = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (username, password, role, full_name) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$username, $hashed, $role, $full_name]);
+    // Вставка пользователя
+    $stmt = $pdo->prepare("INSERT INTO users (full_name, username, password, role, group_name, course) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$full_name, $username, $hashed_password, $role, $group_name, $course]);
 
     $user_id = $pdo->lastInsertId();
 
-    $stmt = $pdo->prepare("INSERT INTO student_accounts (user_id, student_id) VALUES (?, ?)");
-    $stmt->execute([$user_id, $student['id']]);
+    // Синхронизация с localStorage
+    $user = [
+        'id' => $user_id,
+        'full_name' => $full_name,
+        'username' => $username,
+        'role' => $role,
+        'group_name' => $group_name,
+        'course' => $course
+    ];
 
-    header("Location: register.php?success=Регистрация успешна");
+    // Сохраняем в сессию для авто-входа
+    $_SESSION['user_id'] = $user_id;
+    $_SESSION['username'] = $username;
+    $_SESSION['full_name'] = $full_name;
+    $_SESSION['role'] = $role;
+
+    header("Location: student/panel.php");
     exit;
 
 } catch (PDOException $e) {
-    error_log("Registration error: " . $e->getMessage());
-    header("Location: register.php?error=Ошибка сервера: " . $e->getMessage());
+    header("Location: register_new.php?error=Ошибка регистрации: " . $e->getMessage());
     exit;
 }
 ?>

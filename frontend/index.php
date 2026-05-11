@@ -1,9 +1,26 @@
-<?php session_start(); ?>
+<?php
+session_start();
+
+// Если уже вошли - перенаправляем по роли
+if (isset($_SESSION['user_id'])) {
+    switch ($_SESSION['role']) {
+        case 'admin':
+            header("Location: admin/dashboard.php");
+            exit;
+        case 'teacher':
+            header("Location: teacher/panel.php");
+            exit;
+        case 'student':
+            header("Location: student/panel.php");
+            exit;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Учеба24</title>
+    <title>Учеба24 — Главная</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -26,7 +43,7 @@
         <h1>Учеба24</h1>
         <p class="lead">Платформа для студентов и преподавателей</p>
         <div class="mt-4">
-            <a href="auth.php" class="btn btn-light btn-lg me-2">Войти</a>
+            <a href="dashboard.php" class="btn btn-light btn-lg me-2">Войти</a>
             <a href="register_new.php" class="btn btn-custom btn-lg">Регистрация</a>
         </div>
     </div>

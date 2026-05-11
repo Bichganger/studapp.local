@@ -1,13 +1,12 @@
-// === ПАНЕЛЬ ДОСТУПНОСТИ ===
+// === ПАНЕЛЬ ДОСТУПНОСТИ — СИНХРОНИЗАЦИЯ ЧЕРЕЗ SYNC ===
 class AccessibilityPanel {
     constructor() {
         this.settings = {
-            fontSize: 'normal',
+            fontSize: '100',
             highContrast: false,
             largeButtons: false,
-            textToSpeech: false,
-            visualAlerts: true,
-            simplified: false
+            simplified: false,
+            visualAlerts: true
         };
         
         this.init();
@@ -15,97 +14,48 @@ class AccessibilityPanel {
     
     init() {
         this.loadSettings();
-        this.createToggleButton();
-        this.createPanel();
         this.bindEvents();
-    }
-    
-    // === СОХРАНЕНИЕ НАСТРОЕК ===
-    loadSettings() {
-        const saved = localStorage.getItem('accessibility_settings');
-        if (saved) {
-            this.settings = { ...this.settings, ...JSON.parse(saved) };
-        }
         this.applySettings();
-    }
-    
-    saveSettings() {
-        localStorage.setItem('accessibility_settings', JSON.stringify(this.settings));
-    }
-    
-    // === СОЗДАНИЕ КНОПКИ ===
-    createToggleButton() {
-        const btn = document.createElement('button');
-        btn.className = 'accessibility-toggle';
-        btn.innerHTML = '<i class="bi bi-universal-access"></i>';
-        btn.title = 'Панель доступности';
-        btn.setAttribute('aria-label', 'Панель доступности');
-        document.body.appendChild(btn);
         
-        btn.addEventListener('click', () => {
-            document.querySelector('.accessibility-panel').classList.toggle('active');
+        // Слушатель синхронизации
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'sync_accessibility') {
+                this.loadSettings();
+                this.applySettings();
+            }
         });
     }
     
-    // === СОЗДАНИЕ ПАНЕЛИ ===
-    createPanel() {
-        const panel = document.createElement('div');
-        panel.className = 'accessibility-panel';
-        panel.innerHTML = `
-            <h5><i class="bi bi-universal-access"></i> Доступность</h5>
-            
-            <div class="accessibility-section">
-                <h6><i class="bi bi-text-resize"></i> Размер текста</h6>
-                <button class="accessibility-btn" data-action="fontSize" data-value="normal">
-                    <i class="bi bi-text-left"></i> Обычный
-                </button>
-                <button class="accessibility-btn" data-action="fontSize" data-value="125">
-                    <i class="bi bi-text-paragraph"></i> 125%
-                </button>
-                <button class="accessibility-btn" data-action="fontSize" data-value="150">
-                    <i class="bi bi-text-paragraph"></i> 150%
-                </button>
-                <button class="accessibility-btn" data-action="fontSize" data-value="200">
-                    <i class="bi bi-text-paragraph"></i> 200%
-                </button>
-            </div>
-            
-            <div class="accessibility-section">
-                <h6><i class="bi bi-palette"></i> Визуальный режим</h6>
-                <button class="accessibility-btn" data-action="highContrast">
-                    <i class="bi bi-circle-half"></i> Высокая контрастность
-                </button>
-                <button class="accessibility-btn" data-action="largeButtons">
-                    <i class="bi bi-arrows-expand"></i> Увеличенные кнопки
-                </button>
-                <button class="accessibility-btn" data-action="simplified">
-                    <i class="bi bi-ui-checks"></i> Упрощённый интерфейс
-                </button>
-            </div>
-            
-            <div class="accessibility-section">
-                <h6><i class="bi bi-volume-up"></i> Аудио</h6>
-                <button class="accessibility-btn" data-action="textToSpeech">
-                    <i class="bi bi-mic"></i> Чтение вслух
-                </button>
-            </div>
-            
-            <div class="accessibility-section">
-                <h6><i class="bi bi-bell"></i> Уведомления</h6>
-                <button class="accessibility-btn" data-action="visualAlerts">
-                    <i class="bi bi-eye"></i> Визуальные уведомления
-                </button>
-            </div>
-        `;
-        document.body.appendChild(panel);
+    // === ЗАГРУЗКА НАСТРОЕК (из Sync) ===
+    loadSettings() {
+        const stored = localStorage.getItem('sync_accessibility');
+        if (stored) {
+            const settings = JSON.parse(stored);
+            // Применяем настройки для ТЕКУЩЕГО пользователя
+            const userId = sessionStorage.getItem('user_id') || 'guest';
+            if (settings[userId]) {
+                this.settings = { ...this.settings, ...settings[userId] };
+            }
+        }
+    }
+    
+    // === СОХРАНЕНИЕ НАСТРОЕК (в Sync) ===
+    saveSettings() {
+        const userId = sessionStorage.getItem('user_id') || 'guest';
+        let allSettings = JSON.parse(localStorage.getItem('sync_accessibility') || '{}');
+        allSettings[userId] = this.settings;
+        localStorage.setItem('sync_accessibility', JSON.stringify(allSettings));
+        
+        // Триггер синхронизации
+        window.dispatchEvent(new Event('storage'));
     }
     
     // === ПРИМЕНЕНИЕ НАСТРОЕК ===
     applySettings() {
         document.body.classList.remove('text-large-125', 'text-large-150', 'text-large-200');
-        document.body.classList.remove('high-contrast', 'large-cursor', 'large-buttons', 'simplified-ui');
+        document.body.classList.remove('high-contrast', 'large-buttons', 'simplified-ui');
         
-        if (this.settings.fontSize !== 'normal') {
+        if (this.settings.fontSize !== '100') {
             document.body.classList.add(`text-large-${this.settings.fontSize}`);
         }
         
@@ -113,96 +63,83 @@ class AccessibilityPanel {
         if (this.settings.largeButtons) document.body.classList.add('large-buttons');
         if (this.settings.simplified) document.body.classList.add('simplified-ui');
         
-        this.updateActiveButtons();
+        this.updateUI();
     }
     
-    updateActiveButtons() {
-        document.querySelectorAll('.accessibility-btn').forEach(btn => {
-            const action = btn.dataset.action;
-            const value = btn.dataset.value;
-            
-            if (action === 'fontSize') {
-                btn.classList.toggle('active', value === this.settings.fontSize);
-            } else {
-                btn.classList.toggle('active', this.settings[action]);
+    // === ОБНОВЛЕНИЕ UI МОДАЛЬНОГО ОКНА ===
+    updateUI() {
+        const modal = document.getElementById('accessibilityModal');
+        if (!modal) return;
+        
+        // Кнопки размера текста
+        modal.querySelectorAll('[data-a11y="fontSize"]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.value === this.settings.fontSize);
+        });
+        
+        // Чекбоксы
+        modal.querySelectorAll('[data-a11y]').forEach(el => {
+            if (el.type === 'checkbox') {
+                el.checked = this.settings[el.dataset.a11y];
             }
         });
     }
     
     // === ОБРАБОТКА СОБЫТИЙ ===
     bindEvents() {
-        document.querySelector('.accessibility-panel').addEventListener('click', (e) => {
-            const btn = e.target.closest('.accessibility-btn');
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-a11y]');
             if (!btn) return;
             
-            const action = btn.dataset.action;
+            const action = btn.dataset.a11y;
             const value = btn.dataset.value;
             
-            if (action === 'fontSize') {
+            if (btn.type === 'checkbox') {
+                this.settings[action] = btn.checked;
+            } else if (action === 'fontSize') {
                 this.settings.fontSize = value;
-            } else {
-                this.settings[action] = !this.settings[action];
             }
             
             this.saveSettings();
             this.applySettings();
             
-            if (action === 'textToSpeech') {
-                this.toggleTextToSpeech();
+            // Визуальное подтверждение
+            if (this.settings.visualAlerts) {
+                this.showNotification('Настройки сохранены');
             }
         });
     }
     
-    // === ЧТЕНИЕ Вслух ===
-    toggleTextToSpeech() {
-        if (!this.settings.textToSpeech) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const text = document.querySelector('.main-content')?.textContent || '';
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ru-RU';
-                utterance.rate = 0.9;
-                window.speechSynthesis.speak(utterance);
-            }
-        } else {
-            window.speechSynthesis.cancel();
-        }
-    }
-    
-    // === ВИЗУАЛЬНОЕ УВЕДОМЛЕНИЕ ===
-    showVisualAlert(message, type = 'info') {
-        if (!this.settings.visualAlerts) return;
-        
-        const alert = document.createElement('div');
-        alert.className = 'visual-alert';
-        
-        const colors = {
-            info: '#667eea',
-            success: '#11998e',
-            warning: '#f093fb',
-            error: '#f5576c'
-        };
-        
-        alert.style.borderLeftColor = colors[type] || colors.info;
-        alert.innerHTML = `
-            <strong>${type.toUpperCase()}</strong>
-            <p>${message}</p>
+    // === УВЕДОМЛЕНИЕ ===
+    showNotification(message) {
+        const notif = document.createElement('div');
+        notif.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         `;
+        notif.textContent = message;
+        document.body.appendChild(notif);
         
-        document.body.appendChild(alert);
-        
-        setTimeout(() => {
-            alert.remove();
-        }, 5000);
+        setTimeout(() => notif.remove(), 3000);
     }
 }
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 const Accessibility = new AccessibilityPanel();
 
-// === МОНИТОРИНГ УВЕДОМЛЕНИЙ ===
-const originalShowNotification = Sync.showNotification;
-Sync.showNotification = function(message, type = 'info') {
-    originalShowNotification(message, type);
-    Accessibility.showVisualAlert(message, type);
-};
+// === СИНХРОНИЗАЦИЯ С Sync.showNotification ===
+if (typeof Sync !== 'undefined' && Sync.showNotification) {
+    const originalShowNotification = Sync.showNotification;
+    Sync.showNotification = function(message, type = 'info') {
+        originalShowNotification(message, type);
+        if (Accessibility.settings.visualAlerts) {
+            Accessibility.showNotification(message);
+        }
+    };
+}

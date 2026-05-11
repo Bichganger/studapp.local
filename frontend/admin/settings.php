@@ -45,81 +45,37 @@ $name = htmlspecialchars($_SESSION['full_name']);
         <a href="library.php"><i class="bi bi-journal me-2"></i>Библиотека</a>
         <a href="notifications.php"><i class="bi bi-bell me-2"></i>Рассылка</a>
         <a href="settings.php" class="active"><i class="bi bi-gear me-2"></i>Настройки</a>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal" class="accessibility-menu-btn"><i class="bi bi-universal-access me-2"></i>Доступность</a>
         <hr class="mx-2">
         <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
     </nav>
 </div>
 
-<main class="main-content">
-    <h3 class="mb-4">Настройки системы</h3>
-    
-    <div class="card">
-        <div class="card-header">Общие настройки</div>
-        <div class="card-body">
-            <form id="settingsForm">
-                <div class="mb-3">
-                    <label class="form-label">Название системы</label>
-                    <input type="text" name="system_name" class="form-control" value="Учеба24">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email для уведомлений</label>
-                    <input type="email" name="notification_email" class="form-control" value="admin@ucheba.online">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Часовой пояс</label>
-                    <select name="timezone" class="form-select">
-                        <option value="MSK">MSK (Москва)</option>
-                        <option value="MSK+1">MSK+1</option>
-                        <option value="MSK+2">MSK+2</option>
-                    </select>
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" name="allow_registration" class="form-check-input" checked>
-                    <label class="form-check-label">Открытая регистрация</label>
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" name="email_confirmation" class="form-check-input" checked>
-                    <label class="form-check-label">Подтверждение email</label>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Мин. длина пароля</label>
-                    <input type="number" name="min_password_length" class="form-control" value="6">
-                </div>
-                <button type="button" onclick="saveSettings()" class="btn btn-primary">Сохранить</button>
-            </form>
+<!-- Модальное окно доступности -->
+<div class="modal fade" id="accessibilityModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <h6>Размер текста</h6>
+            <div class="btn-group w-100 mb-3">
+                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="100">100%</button>
+                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="125">125%</button>
+                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="150">150%</button>
+                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="200">200%</button>
+            </div>
+            <h6>Визуальный режим</h6>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="simplified" id="simplified"><label class="form-check-label" for="simplified">Упрощённый интерфейс</label></div>
+            <h6>Уведомления</h6>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="visualAlerts" id="visualAlerts" checked><label class="form-check-label" for="visualAlerts">Визуальные уведомления</label></div>
         </div>
-    </div>
-</main>
+    </div></div>
+</div>
 
 <footer>&copy; 2026 Учеба24</footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/sync.js"></script>
-<script>
-function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem('sync_settings') || '{}');
-    const form = document.getElementById('settingsForm');
-    if (settings.system_name) form.querySelector('[name="system_name"]').value = settings.system_name;
-    if (settings.notification_email) form.querySelector('[name="notification_email"]').value = settings.notification_email;
-    if (settings.timezone) form.querySelector('[name="timezone"]').value = settings.timezone;
-    if (settings.min_password_length) form.querySelector('[name="min_password_length"]').value = settings.min_password_length;
-}
-
-function saveSettings() {
-    const form = document.getElementById('settingsForm');
-    const settings = {
-        system_name: form.querySelector('[name="system_name"]').value,
-        notification_email: form.querySelector('[name="notification_email"]').value,
-        timezone: form.querySelector('[name="timezone"]').value,
-        allow_registration: form.querySelector('[name="allow_registration"]').checked,
-        email_confirmation: form.querySelector('[name="email_confirmation"]').checked,
-        min_password_length: form.querySelector('[name="min_password_length"]').value
-    };
-    
-    localStorage.setItem('sync_settings', JSON.stringify(settings));
-    Sync.showNotification('Настройки сохранены!', 'success');
-}
-
-document.addEventListener('DOMContentLoaded', loadSettings);
-</script>
+<script src="../assets/js/accessibility.js"></script>
 </body>
 </html>

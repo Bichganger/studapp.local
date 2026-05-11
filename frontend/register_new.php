@@ -99,7 +99,7 @@
         
         <div class="text-center">
             <small class="text-muted">Уже есть аккаунт? 
-                <a href="login_new.php" class="text-decoration-none fw-bold" style="color: #667eea;">Войти</a>
+                <a href="dashboard.php" class="text-decoration-none fw-bold" style="color: #667eea;">Войти</a>
             </small>
         </div>
         
