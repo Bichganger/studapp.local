@@ -3,63 +3,66 @@ session_start();
 require_once '../protected/auth_guard.php';
 if ($_SESSION['role'] !== 'student') { header("Location: ../dashboard.php"); exit; }
 $name = htmlspecialchars($_SESSION['full_name']);
-$group = $_SESSION['group_name'] ?? 'ПИ-21';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Расписание — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../assets/css/sidebar-common.css">
     <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: sans-serif; }
-        .sidebar { min-height: 100vh; background: #1a202c; color: white; position: fixed; width: 240px; left: 0; top: 0; }
-        .sidebar-header { background: #0d1b2a; padding: 20px; text-align: center; border-bottom: 3px solid #198754; }
-        .sidebar-header h5 { color: #fff; font-weight: 700; margin: 0; }
-        .sidebar-header small { color: #198754; display: block; margin-top: 5px; }
-        .sidebar a { color: #d8dee9; margin: 5px 10px; border-radius: 5px; display: block; padding: 10px 15px; text-decoration: none; }
-        .sidebar a:hover, .sidebar a.active { background: #198754; color: white; }
-        .main-content { margin-left: 240px; padding: 20px; }
-        .card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: none; }
-        .card-header { background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white; border: none; }
-        .schedule-item { padding: 15px; margin: 10px 0; background: rgba(255,255,255,0.95); border-radius: 10px; border-left: 4px solid #198754; }
+        .sidebar-header { border-bottom-color: #198754; }
+        .sidebar-header small { color: #198754; }
+        .sidebar a:hover, .sidebar a.active { background: linear-gradient(90deg, #198754 0%, #146c43 100%); }
+        .welcome-card { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; }
+        .card-header { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; }
+        .table thead th { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #198754 0%, #146c43 100%); border: none; }
     </style>
 </head>
-<body>
+<body class="role-student">
+
 <div class="sidebar">
     <div class="sidebar-header">
-        <h5 class="mb-0"><i class="bi bi-mortarboard"></i> Учеба24</h5>
+        <h5><i class="bi bi-mortarboard"></i> Учеба24</h5>
         <small>Кабинет студента</small>
     </div>
     <nav class="mt-3">
         <a href="panel.php"><i class="bi bi-house me-2"></i>Главная</a>
         <a href="schedule.php" class="active"><i class="bi bi-calendar me-2"></i>Расписание</a>
         <a href="grades.php"><i class="bi bi-star me-2"></i>Оценки</a>
-        <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Работы</a>
+        <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Мои работы</a>
         <a href="library.php"><i class="bi bi-journal me-2"></i>Библиотека</a>
         <a href="notifications.php"><i class="bi bi-bell me-2"></i>Уведомления</a>
+        <hr>
         <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal"><i class="bi bi-universal-access me-2"></i>Доступность</a>
-        <hr class="mx-2">
         <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
     </nav>
 </div>
 
 <main class="main-content">
-    <div class="p-4 rounded shadow-sm mb-4" style="background: linear-gradient(135deg, #198754 0%, #20c997 100%); color: white; border-radius: 15px;">
-        <h3><i class="bi bi-calendar-week"></i> Расписание занятий</h3>
-        <p>Группа: <strong><?= $group ?></strong></p>
+    <div class="p-4 welcome-card">
+        <h3><i class="bi bi-calendar-week"></i> Моё расписание</h3>
+        <p class="mb-0">Расписание занятий вашей группы</p>
     </div>
 
     <div class="card">
-        <div class="card-header"><h5 class="mb-0"><i class="bi bi-list-ul"></i> Ваше расписание</h5></div>
+        <div class="card-header"><i class="bi bi-list-ul me-2"></i>Занятия</div>
         <div class="card-body">
-            <div id="scheduleContainer">
-                <div class="text-center text-muted">Загрузка...</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>День</th><th>Предмет</th><th>Преподаватель</th><th>Время</th><th>Кабинет</th></tr></thead>
+                    <tbody id="scheduleBody"><tr><td colspan="5" class="text-center">Загрузка...</td></tr></tbody>
+                </table>
             </div>
         </div>
     </div>
 </main>
+
+<footer>&copy; 2026 Учеба24</footer>
 
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
@@ -76,67 +79,40 @@ $group = $_SESSION['group_name'] ?? 'ПИ-21';
             <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
             <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
         </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
+            <button type="button" class="btn btn-success" onclick="saveAccessibility()">Сохранить</button>
+        </div>
     </div></div>
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/sync.js"></script>
-<script src="../assets/js/accessibility.js"></script>
 <script>
-// ДАННЫЕ ЗАГРУЖАЮТСЯ СРАЗУ!
-const userGroup = '<?= $group ?>';
-
-function loadSchedule() {
-    const container = document.getElementById('scheduleContainer');
-    if (!container) return;
-    
-    // Получаем расписание из Sync (данные уже загружены!)
-    const allSchedule = window.Sync.getSchedule();
-    const groupSchedule = allSchedule.filter(s => s.group_name === userGroup);
-    
-    console.log('Загружено расписания:', groupSchedule.length);
-    
-    if (groupSchedule.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted"><i class="bi bi-infinity display-4"></i><p class="mt-3">Расписание не найдено</p></div>';
-        return;
-    }
-    
-    // Группируем по дням
-    const days = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'];
-    const byDay = {};
-    days.forEach(d => byDay[d] = []);
-    groupSchedule.forEach(item => {
-        if (byDay[item.day_of_week]) {
-            byDay[item.day_of_week].push(item);
-        }
-    });
-    
-    let html = '';
-    days.forEach(day => {
-        if (byDay[day].length > 0) {
-            html += `<h6 class="mt-4 mb-3 text-white"><i class="bi bi-calendar-event"></i> ${day.charAt(0).toUpperCase() + day.slice(1)}</h6>`;
-            byDay[day].forEach(item => {
-                html += `
-                    <div class="schedule-item">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1"><strong>${item.subject}</strong></h6>
-                                <small class="text-muted"><i class="bi bi-clock"></i> ${item.start_time} - ${item.end_time}</small>
-                                <small class="text-muted ms-3"><i class="bi bi-person"></i> ${item.teacher_name || '-'}</small>
-                                <small class="text-muted ms-3"><i class="bi bi-geo-alt"></i> ${item.classroom || '-'}</small>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-    });
-    
-    container.innerHTML = html;
+async function load() {
+    const r = await fetch('../api/sync.php?action=get_schedule').then(r=>r.json());
+    const data = r.success ? r.data : [];
+    const tb = document.getElementById('scheduleBody');
+    if(data.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет занятий</td></tr>'; return; }
+    const days = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+    const sorted = data.sort((a,b)=>days.indexOf(a.day_of_week)-days.indexOf(b.day_of_week));
+    tb.innerHTML = sorted.map(x=>`
+        <tr><td>${x.day_of_week}</td><td>${x.subject}</td><td>${x.teacher_name}</td><td>${(x.start_time||'').substring(0,5)}-${(x.end_time||'').substring(0,5)}</td><td>${x.classroom}</td></tr>
+    `).join('');
 }
-
-// Загружаем сразу при загрузке страницы
-loadSchedule();
+function saveAccessibility() {
+    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
+    localStorage.setItem('accessibility_settings',JSON.stringify(s));
+    showToast('Настройки сохранены!','success');
+    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
+}
+function showToast(m,t) {
+    const c=document.querySelector('.toast-container'),el=document.createElement('div');
+    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
+    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+}
+load();
 </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оценки — Учеба24</title>
+    <title>Расписание — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../assets/css/sidebar-common.css">
@@ -33,10 +33,10 @@ $name = htmlspecialchars($_SESSION['full_name']);
     <nav class="mt-3">
         <a href="panel.php"><i class="bi bi-house me-2"></i>Главная</a>
         <a href="journal.php"><i class="bi bi-journal-text me-2"></i>Журнал</a>
-        <a href="grades.php" class="active"><i class="bi bi-star me-2"></i>Оценки</a>
+        <a href="grades.php"><i class="bi bi-star me-2"></i>Оценки</a>
         <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Работы</a>
         <a href="groups.php"><i class="bi bi-people me-2"></i>Группы</a>
-        <a href="schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a>
+        <a href="schedule.php" class="active"><i class="bi bi-calendar me-2"></i>Расписание</a>
         <a href="notifications.php"><i class="bi bi-bell me-2"></i>Рассылка</a>
         <hr>
         <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal"><i class="bi bi-universal-access me-2"></i>Доступность</a>
@@ -46,41 +46,46 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <main class="main-content">
     <div class="p-4 welcome-card">
-        <h3><i class="bi bi-star"></i> Управление оценками</h3>
-        <p class="mb-0">Выставление и просмотр оценок студентов</p>
+        <h3><i class="bi bi-calendar-week"></i> Расписание занятий</h3>
+        <p class="mb-0">Просмотр и добавление занятий</p>
     </div>
 
     <div class="row g-3">
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Выставить оценку</div>
+                <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Добавить занятие</div>
                 <div class="card-body">
-                    <form id="gradeForm">
-                        <div class="mb-2"><label class="form-label">Студент</label><select class="form-select" id="gStudent" required></select></div>
-                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="gGroup" required></select></div>
-                        <div class="mb-2"><label class="form-label">Предмет</label><input type="text" class="form-control" id="gSubject" required></div>
-                        <div class="mb-2"><label class="form-label">Оценка</label>
-                            <select class="form-select" id="gGrade" required>
-                                <option value="5">5 (Отлично)</option>
-                                <option value="4">4 (Хорошо)</option>
-                                <option value="3">3 (Удовл.)</option>
-                                <option value="2">2 (Неуд.)</option>
+                    <form id="scheduleForm">
+                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="sGroup" required></select></div>
+                        <div class="mb-2"><label class="form-label">Предмет</label><input type="text" class="form-control" id="sSubject" required></div>
+                        <div class="mb-2"><label class="form-label">Преподаватель</label><input type="text" class="form-control" id="sTeacher" value="<?= $name ?>" required></div>
+                        <div class="mb-2"><label class="form-label">День недели</label>
+                            <select class="form-select" id="sDay" required>
+                                <option value="понедельник">Понедельник</option>
+                                <option value="вторник">Вторник</option>
+                                <option value="среда">Среда</option>
+                                <option value="четверг">Четверг</option>
+                                <option value="пятница">Пятница</option>
                             </select>
                         </div>
-                        <div class="mb-2"><label class="form-label">Дата</label><input type="date" class="form-control" id="gDate" required></div>
-                        <button type="button" class="btn btn-info w-100" onclick="addGrade()">Сохранить</button>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6"><label class="form-label">Начало</label><input type="time" class="form-control" id="sStart" required></div>
+                            <div class="col-6"><label class="form-label">Конец</label><input type="time" class="form-control" id="sEnd" required></div>
+                        </div>
+                        <div class="mb-2"><label class="form-label">Кабинет</label><input type="text" class="form-control" id="sRoom" placeholder="301" required></div>
+                        <button type="button" class="btn btn-info w-100" onclick="addSchedule()">Добавить</button>
                     </form>
                 </div>
             </div>
         </div>
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header"><i class="bi bi-list-ul me-2"></i>Журнал оценок</div>
+                <div class="card-header"><i class="bi bi-list-ul me-2"></i>Расписание</div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
-                            <thead><tr><th>Дата</th><th>Студент</th><th>Группа</th><th>Предмет</th><th>Оценка</th></tr></thead>
-                            <tbody id="gradesBody"><tr><td colspan="5" class="text-center">Загрузка...</td></tr></tbody>
+                            <thead><tr><th>День</th><th>Группа</th><th>Предмет</th><th>Время</th><th>Кабинет</th></tr></thead>
+                            <tbody id="scheduleBody"><tr><td colspan="5" class="text-center">Загрузка...</td></tr></tbody>
                         </table>
                     </div>
                 </div>
@@ -116,43 +121,37 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-let studentsData = [], groupsData = [], gradesData = [];
+let scheduleData = [], groupsData = [];
 async function load() {
-    const [u,g,r] = await Promise.all([
-        fetch('../api/sync.php?action=get_users').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_grades').then(r=>r.json())
+    const [s,g] = await Promise.all([
+        fetch('../api/sync.php?action=get_schedule').then(r=>r.json()),
+        fetch('../api/sync.php?action=get_groups').then(r=>r.json())
     ]);
-    studentsData = (u.success?u.data:[]).filter(x=>x.role==='student');
-    groupsData = g.success?g.data:[];
-    gradesData = r.success?r.data:[];
-
-    const st = document.getElementById('gStudent');
-    st.innerHTML = studentsData.map(s=>`<option value="${s.id}" data-group="${s.group_name||''}">${s.full_name}</option>`).join('');
-    const gr = document.getElementById('gGroup');
-    gr.innerHTML = groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
-
-    const tb = document.getElementById('gradesBody');
-    if(gradesData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет оценок</td></tr>'; return; }
-    tb.innerHTML = gradesData.map(x=>`
-        <tr><td>${x.date}</td><td>${x.student_name}</td><td>${x.group_name}</td><td>${x.subject}</td>
-        <td><span class="badge bg-${x.grade>=4?'success':x.grade==3?'warning':'danger'}">${x.grade}</span></td></tr>
+    scheduleData = s.success ? s.data : [];
+    groupsData = g.success ? g.data : [];
+    const sel = document.getElementById('sGroup');
+    sel.innerHTML = groupsData.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+    const tb = document.getElementById('scheduleBody');
+    if(scheduleData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет занятий</td></tr>'; return; }
+    const days = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+    const sorted = scheduleData.sort((a,b)=>days.indexOf(a.day_of_week)-days.indexOf(b.day_of_week));
+    tb.innerHTML = sorted.map(x=>`
+        <tr><td>${x.day_of_week}</td><td>${x.group_name}</td><td>${x.subject}</td><td>${(x.start_time||'').substring(0,5)}-${(x.end_time||'').substring(0,5)}</td><td>${x.classroom}</td></tr>
     `).join('');
 }
-async function addGrade() {
-    const studentId = document.getElementById('gStudent').value;
-    const student = studentsData.find(s=>s.id==studentId);
+async function addSchedule() {
     const fd = new FormData();
-    fd.append('action','add_grade');
-    fd.append('student_id',studentId);
-    fd.append('student_name',student?student.full_name:'');
-    fd.append('group_name',document.getElementById('gGroup').value);
-    fd.append('subject',document.getElementById('gSubject').value);
-    fd.append('grade',document.getElementById('gGrade').value);
-    fd.append('date',document.getElementById('gDate').value);
+    fd.append('action','add_schedule');
+    fd.append('group_name',document.getElementById('sGroup').value);
+    fd.append('subject',document.getElementById('sSubject').value);
+    fd.append('teacher_name',document.getElementById('sTeacher').value);
+    fd.append('day_of_week',document.getElementById('sDay').value);
+    fd.append('start_time',document.getElementById('sStart').value+':00');
+    fd.append('end_time',document.getElementById('sEnd').value+':00');
+    fd.append('classroom',document.getElementById('sRoom').value);
     const r = await fetch('../api/sync.php',{method:'POST',body:fd});
     const d = await r.json();
-    if(d.success) { showToast('Оценка сохранена!','success'); document.getElementById('gradeForm').reset(); load(); }
+    if(d.success) { showToast('Занятие добавлено!','success'); document.getElementById('scheduleForm').reset(); load(); }
     else showToast(d.message||'Ошибка','error');
 }
 function saveAccessibility() {

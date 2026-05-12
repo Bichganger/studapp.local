@@ -1,28 +1,33 @@
 <?php
 session_start();
 require_once '../protected/auth_guard.php';
-
-if ($_SESSION['role'] !== 'teacher') {
-    header("Location: ../dashboard.php");
-    exit;
-}
-
+if ($_SESSION['role'] !== 'teacher') { header("Location: ../dashboard.php"); exit; }
 $name = htmlspecialchars($_SESSION['full_name']);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Журнал — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../assets/css/teacher-style.css">
+    <link rel="stylesheet" href="../assets/css/sidebar-common.css">
+    <style>
+        .sidebar-header { border-bottom-color: #0dcaf0; }
+        .sidebar-header small { color: #0dcaf0; }
+        .sidebar a:hover, .sidebar a.active { background: linear-gradient(90deg, #0dcaf0 0%, #0bb5d6 100%); }
+        .welcome-card { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
+        .card-header { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
+        .table thead th { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
+        .btn-info { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); border: none; color: #fff; }
+    </style>
 </head>
-<body>
+<body class="role-teacher">
 
 <div class="sidebar">
     <div class="sidebar-header">
-        <h5><i class="bi bi-mortarboard"></i> Учеба24</h5>
+        <h5><i class="bi bi-person-badge"></i> Учеба24</h5>
         <small>Кабинет преподавателя</small>
     </div>
     <nav class="mt-3">
@@ -31,37 +36,138 @@ $name = htmlspecialchars($_SESSION['full_name']);
         <a href="grades.php"><i class="bi bi-star me-2"></i>Оценки</a>
         <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Работы</a>
         <a href="groups.php"><i class="bi bi-people me-2"></i>Группы</a>
-        <a href="notifications.php"><i class="bi bi-bell me-2"></i>Уведомления</a>
-        <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal" class="accessibility-menu-btn"><i class="bi bi-universal-access me-2"></i>Доступность</a>
+        <a href="schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a>
+        <a href="notifications.php"><i class="bi bi-bell me-2"></i>Рассылка</a>
+        <hr>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal"><i class="bi bi-universal-access me-2"></i>Доступность</a>
         <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
     </nav>
 </div>
 
-<!-- Модальное окно доступности -->
+<main class="main-content">
+    <div class="p-4 welcome-card">
+        <h3><i class="bi bi-journal-text"></i> Журнал посещаемости</h3>
+        <p class="mb-0">Учёт посещаемости занятий</p>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Отметить посещаемость</div>
+                <div class="card-body">
+                    <form id="journalForm">
+                        <div class="mb-2"><label class="form-label">Студент</label><select class="form-select" id="jStudent" required></select></div>
+                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="jGroup" required></select></div>
+                        <div class="mb-2"><label class="form-label">Предмет</label><input type="text" class="form-control" id="jSubject" required></div>
+                        <div class="mb-2"><label class="form-label">Дата</label><input type="date" class="form-control" id="jDate" required></div>
+                        <div class="mb-2"><label class="form-label">Статус</label>
+                            <select class="form-select" id="jStatus">
+                                <option value="present">Присутствовал</option>
+                                <option value="absent">Отсутствовал</option>
+                                <option value="sick">Болеет</option>
+                                <option value="late">Опоздал</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-info w-100" onclick="addJournal()">Отметить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-list-ul me-2"></i>Записи журнала</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead><tr><th>Дата</th><th>Студент</th><th>Группа</th><th>Предмет</th><th>Статус</th></tr></thead>
+                            <tbody id="journalBody"><tr><td colspan="5" class="text-center">Загрузка...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>&copy; 2026 Учеба24</footer>
+
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <h6>Размер текста</h6>
             <div class="btn-group w-100 mb-3">
-                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="100">100%</button>
-                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="125">125%</button>
-                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="150">150%</button>
-                <button class="btn btn-outline-primary" data-a11y="fontSize" data-value="200">200%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="100">100%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="125">125%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="150">150%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="200">200%</button>
             </div>
             <h6>Визуальный режим</h6>
             <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
             <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
-            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="simplified" id="simplified"><label class="form-check-label" for="simplified">Упрощённый интерфейс</label></div>
-            <h6>Уведомления</h6>
-            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="visualAlerts" id="visualAlerts" checked><label class="form-check-label" for="visualAlerts">Визуальные уведомления</label></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
+            <button type="button" class="btn btn-info" onclick="saveAccessibility()">Сохранить</button>
         </div>
     </div></div>
 </div>
 
-<footer>&copy; 2026 Учеба24</footer>
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/sync.js"></script>
-<script src="../assets/js/accessibility.js"></script>
+<script>
+let studentsData = [], groupsData = [], journalData = [];
+async function load() {
+    const [u,g,j] = await Promise.all([
+        fetch('../api/sync.php?action=get_users').then(r=>r.json()),
+        fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
+        fetch('../api/sync.php?action=get_journal').then(r=>r.json())
+    ]);
+    studentsData = (u.success?u.data:[]).filter(x=>x.role==='student');
+    groupsData = g.success?g.data:[];
+    journalData = j.success?j.data:[];
+
+    const st = document.getElementById('jStudent');
+    st.innerHTML = studentsData.map(s=>`<option value="${s.id}" data-group="${s.group_name||''}">${s.full_name} (${s.group_name||'без группы'})</option>`).join('');
+    const gr = document.getElementById('jGroup');
+    gr.innerHTML = groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+
+    const tb = document.getElementById('journalBody');
+    if(journalData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет записей</td></tr>'; return; }
+    tb.innerHTML = journalData.map(x=>`
+        <tr><td>${x.date}</td><td>${x.student_name}</td><td>${x.group_name}</td><td>${x.subject}</td>
+        <td><span class="badge bg-${x.status==='present'?'success':x.status==='absent'?'danger':x.status==='sick'?'warning':'secondary'}">${x.status}</span></td></tr>
+    `).join('');
+}
+async function addJournal() {
+    const studentId = document.getElementById('jStudent').value;
+    const student = studentsData.find(s=>s.id==studentId);
+    const fd = new FormData();
+    fd.append('action','add_journal');
+    fd.append('student_id',studentId);
+    fd.append('student_name',student?student.full_name:'');
+    fd.append('group_name',document.getElementById('jGroup').value);
+    fd.append('subject',document.getElementById('jSubject').value);
+    fd.append('date',document.getElementById('jDate').value);
+    fd.append('status',document.getElementById('jStatus').value);
+    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Отмечено!','success'); document.getElementById('journalForm').reset(); load(); }
+    else showToast(d.message||'Ошибка','error');
+}
+function saveAccessibility() {
+    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
+    localStorage.setItem('accessibility_settings',JSON.stringify(s));
+    showToast('Настройки сохранены!','success');
+    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
+}
+function showToast(m,t) {
+    const c=document.querySelector('.toast-container'),el=document.createElement('div');
+    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
+    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+}
+load();
+</script>
 </body>
 </html>

@@ -1,30 +1,27 @@
 <?php
 session_start();
 require_once '../protected/auth_guard.php';
-
-if ($_SESSION['role'] != 'teacher') {
-    header("Location: ../dashboard.php");
-    exit;
-}
-
+if ($_SESSION['role'] !== 'teacher') { header("Location: ../dashboard.php"); exit; }
 $name = htmlspecialchars($_SESSION['full_name']);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Кабинет — Учеба24</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабинет преподавателя — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../assets/css/teacher-style.css">
-    <link rel="stylesheet" href="../assets/css/accessibility.css">
+    <link rel="stylesheet" href="../assets/css/sidebar-common.css">
     <style>
-        body { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .sidebar { background: #1a202c; border-bottom: 3px solid #0dcaf0; }
-        .sidebar-header { border-bottom: 3px solid #0dcaf0; }
+        .sidebar-header { border-bottom-color: #0dcaf0; }
         .sidebar-header small { color: #0dcaf0; }
         .sidebar a:hover, .sidebar a.active { background: linear-gradient(90deg, #0dcaf0 0%, #0bb5d6 100%); }
-        .welcome-card { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); }
+        .welcome-card { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
+        .card-header { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
+        .table thead th { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
+        .btn-info { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); border: none; color: #fff; }
+        .stat-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="role-teacher">
@@ -36,74 +33,70 @@ $name = htmlspecialchars($_SESSION['full_name']);
     </div>
     <nav class="mt-3">
         <a href="panel.php" class="active"><i class="bi bi-house me-2"></i>Главная</a>
-        <a href="journal.php"><i class="bi bi-journal me-2"></i>Журнал</a>
+        <a href="journal.php"><i class="bi bi-journal-text me-2"></i>Журнал</a>
         <a href="grades.php"><i class="bi bi-star me-2"></i>Оценки</a>
         <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Работы</a>
         <a href="groups.php"><i class="bi bi-people me-2"></i>Группы</a>
-        <a href="notifications.php"><i class="bi bi-bell me-2"></i>Уведомления</a>
-        <hr class="mx-2">
+        <a href="schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a>
+        <a href="notifications.php"><i class="bi bi-bell me-2"></i>Рассылка</a>
+        <hr>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal"><i class="bi bi-universal-access me-2"></i>Доступность</a>
         <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
     </nav>
 </div>
 
 <main class="main-content">
-    <div class="p-4 welcome-card rounded shadow-sm mb-4">
+    <div class="p-4 welcome-card">
         <h3><i class="bi bi-person-circle"></i> Добро пожаловать, <?= $name ?>!</h3>
-        <p>Вы вошли как <strong>Преподаватель</strong></p>
+        <p class="mb-0">Вы вошли как <strong>Преподаватель</strong></p>
     </div>
     
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <i class="bi bi-journal-text display-4 text-info"></i>
-                    <h5 class="mt-2">Журнал</h5>
-                    <p class="text-muted small mb-0">Посещаемость</p>
-                    <a href="journal.php" class="btn btn-sm btn-info mt-2 text-white">Открыть</a>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><h6 class="text-muted mb-1">Работ на проверке</h6><h2 class="mb-0" id="statPending">0</h2></div>
+                    <i class="bi bi-file-earmark-text display-4 text-info opacity-50"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <i class="bi bi-star display-4 text-warning"></i>
-                    <h5 class="mt-2">Оценки</h5>
-                    <p class="text-muted small mb-0">Выставление</p>
-                    <a href="grades.php" class="btn btn-sm btn-warning mt-2 text-white">Открыть</a>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><h6 class="text-muted mb-1">Уведомлений</h6><h2 class="mb-0" id="statNotif">0</h2></div>
+                    <i class="bi bi-bell display-4 text-info opacity-50"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <i class="bi bi-file-earmark-text display-4 text-primary"></i>
-                    <h5 class="mt-2">Работы</h5>
-                    <p class="text-muted small mb-0">Проверка</p>
-                    <a href="assignments.php" class="btn btn-sm btn-primary mt-2">Открыть</a>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><h6 class="text-muted mb-1">Групп</h6><h2 class="mb-0" id="statGroups">0</h2></div>
+                    <i class="bi bi-people display-4 text-info opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><h6 class="text-muted mb-1">Занятий сегодня</h6><h2 class="mb-0" id="statClasses">0</h2></div>
+                    <i class="bi bi-calendar display-4 text-info opacity-50"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-3 mt-3">
+    <div class="row g-3">
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header"><h5 class="mb-0"><i class="bi bi-bell"></i> Последние уведомления</h5></div>
-                <div class="card-body">
-                    <div id="teacherNotificationsContainer">
-                        <div class="text-center text-muted">Загрузка...</div>
-                    </div>
-                </div>
+                <div class="card-header"><i class="bi bi-bell me-2"></i>Последние уведомления</div>
+                <div class="card-body"><div id="notifList" class="list-group list-group-flush">Загрузка...</div></div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header"><h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> На проверке</h5></div>
-                <div class="card-body">
-                    <div id="teacherAssignmentsContainer">
-                        <div class="text-center text-muted">Загрузка...</div>
-                    </div>
-                </div>
+                <div class="card-header"><i class="bi bi-file-earmark-check me-2"></i>Работы на проверке</div>
+                <div class="card-body"><div id="assignList" class="list-group list-group-flush">Загрузка...</div></div>
             </div>
         </div>
     </div>
@@ -112,57 +105,71 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <footer>&copy; 2026 Учеба24</footer>
 
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <h6>Размер текста</h6>
+            <div class="btn-group w-100 mb-3">
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="100">100%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="125">125%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="150">150%</button>
+                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="200">200%</button>
             </div>
-            <div class="modal-body">
-                <h6>Размер текста</h6>
-                <div class="btn-group w-100 mb-3">
-                    <button class="btn btn-outline-info" data-a11y="fontSize" data-value="100">100%</button>
-                    <button class="btn btn-outline-info" data-a11y="fontSize" data-value="125">125%</button>
-                    <button class="btn btn-outline-info" data-a11y="fontSize" data-value="150">150%</button>
-                    <button class="btn btn-outline-info" data-a11y="fontSize" data-value="200">200%</button>
-                </div>
-                <h6>Визуальный режим</h6>
-                <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
-                <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
-            </div>
+            <h6>Визуальный режим</h6>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
+            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
         </div>
-    </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
+            <button type="button" class="btn btn-info" onclick="saveAccessibility()">Сохранить</button>
+        </div>
+    </div></div>
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/sync.js"></script>
-<script src="../assets/js/accessibility.js"></script>
 <script>
-async function loadTeacherData() {
-    const notifContainer = document.getElementById('teacherNotificationsContainer');
-    const notifications = await Sync.getNotifications();
-    let html = '<ul class="list-group">';
-    notifications.slice(0, 5).forEach(n => {
-        html += `<li class="list-group-item"><strong>${n.title}</strong><p class="mb-0 small text-muted">${n.message}</p></li>`;
-    });
-    html += '</ul>';
-    notifContainer.innerHTML = html;
+async function loadStats() {
+    try {
+        const [n, a, g, s] = await Promise.all([
+            fetch('../api/sync.php?action=get_notifications').then(r=>r.json()),
+            fetch('../api/sync.php?action=get_assignments').then(r=>r.json()),
+            fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
+            fetch('../api/sync.php?action=get_schedule').then(r=>r.json())
+        ]);
+        const notifs = n.success ? n.data : [];
+        const assigns = a.success ? a.data : [];
+        const groups = g.success ? g.data : [];
+        const schedule = s.success ? s.data : [];
+        const pending = assigns.filter(x=>x.status==='pending'||!x.status);
+        const today = new Date().toLocaleDateString('ru-RU',{weekday:'long'}).toLowerCase();
+        const todayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===today);
 
-    const assignContainer = document.getElementById('teacherAssignmentsContainer');
-    const assignments = await Sync.getAssignments();
-    const pending = assignments.filter(a => a.status === 'pending');
-    html = '<ul class="list-group">';
-    if (pending.length === 0) {
-        html += '<li class="list-group-item text-muted">Нет работ на проверке</li>';
-    } else {
-        pending.forEach(a => {
-            html += `<li class="list-group-item"><strong>${a.title}</strong><br><small class="text-muted">${a.student_name} — ${a.subject}</small></li>`;
-        });
-    }
-    html += '</ul>';
-    assignContainer.innerHTML = html;
+        document.getElementById('statPending').textContent = pending.length;
+        document.getElementById('statNotif').textContent = notifs.length;
+        document.getElementById('statGroups').textContent = groups.length;
+        document.getElementById('statClasses').textContent = todayClasses.length;
+
+        const nl = document.getElementById('notifList');
+        nl.innerHTML = notifs.slice(0,5).map(x=>`<div class="list-group-item"><strong>${x.title}</strong><p class="mb-0 small text-muted">${x.message}</p></div>`).join('') || '<div class="list-group-item text-muted">Нет уведомлений</div>';
+
+        const al = document.getElementById('assignList');
+        al.innerHTML = pending.slice(0,5).map(x=>`<div class="list-group-item"><strong>${x.title}</strong><br><small class="text-muted">${x.student_name} — ${x.subject}</small></div>`).join('') || '<div class="list-group-item text-muted">Нет работ на проверке</div>';
+    } catch(e) { console.error(e); }
 }
-loadTeacherData();
+function saveAccessibility() {
+    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
+    localStorage.setItem('accessibility_settings',JSON.stringify(s));
+    showToast('Настройки сохранены!','success');
+    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
+}
+function showToast(m,t) {
+    const c=document.querySelector('.toast-container'),el=document.createElement('div');
+    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
+    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+}
+loadStats();
 </script>
 </body>
 </html>
