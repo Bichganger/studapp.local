@@ -113,48 +113,23 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
-let notifData = [], groupsData = [];
 async function load() {
-    const [n,g] = await Promise.all([
-        fetch('../api/sync.php?action=get_notifications').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json())
-    ]);
-    notifData = n.success ? n.data : [];
-    groupsData = g.success ? g.data : [];
-    const sel = document.getElementById('nGroup');
-    sel.innerHTML = '<option value="">Не выбрано</option>' + groupsData.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
-    const tb = document.getElementById('notifBody');
-    if(notifData.length===0) { tb.innerHTML='<tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>'; return; }
-    tb.innerHTML = notifData.map(x=>`
-        <tr><td><strong>${x.title}</strong><br><small class="text-muted">${x.message}</small></td>
-        <td><span class="badge bg-${x.target_type==='all'?'primary':x.target_type==='students'?'success':'info'}">${x.target_type}</span> ${x.target_group||''}</td>
-        <td>${x.created_at||'-'}</td></tr>
-    `).join('');
-}
-async function sendNotif() {
-    const fd = new FormData();
-    fd.append('action','add_notification');
-    fd.append('title',document.getElementById('nTitle').value);
-    fd.append('message',document.getElementById('nMsg').value);
-    fd.append('target_type',document.getElementById('nType').value);
-    fd.append('target_group',document.getElementById('nGroup').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
-    const d = await r.json();
-    if(d.success) { showToast('Отправлено!','success'); document.getElementById('notifForm').reset(); load(); }
-    else showToast(d.message||'Ошибка','error');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+    try {
+        const r = await fetch(API_BASE + '?action=get_notifications').then(r=>r.json());
+        const notifs = r.success ? r.data : [];
+        const tb = document.getElementById('notificationsBody');
+        if(notifs.length===0) { tb.innerHTML='<tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>'; return; }
+        tb.innerHTML = notifs.map(n=>`
+            <tr>
+                <td><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></td>
+                <td><span class="badge bg-${n.target_type==='all'?'danger':n.target_type==='teachers'?'info':'success'}">${n.target_type}</span></td>
+                <td>${n.created_at||'-'}</td>
+            </tr>
+        `).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

@@ -96,6 +96,38 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 
+<div class="modal fade" id="scheduleModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="scheduleModalTitle">Редактировать занятие</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <form id="editScheduleForm">
+                <input type="hidden" id="editSchId">
+                <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="editSchGroup" required></select></div>
+                <div class="mb-2"><label class="form-label">Предмет</label><input type="text" class="form-control" id="editSchSubject" required></div>
+                <div class="mb-2"><label class="form-label">Преподаватель</label><input type="text" class="form-control" id="editSchTeacher" required></div>
+                <div class="mb-2"><label class="form-label">День недели</label>
+                    <select class="form-select" id="editSchDay" required>
+                        <option value="понедельник">Понедельник</option>
+                        <option value="вторник">Вторник</option>
+                        <option value="среда">Среда</option>
+                        <option value="четверг">Четверг</option>
+                        <option value="пятница">Пятница</option>
+                    </select>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="form-label">Начало</label><input type="time" class="form-control" id="editSchStart" required></div>
+                    <div class="col-6"><label class="form-label">Конец</label><input type="time" class="form-control" id="editSchEnd" required></div>
+                </div>
+                <div class="mb-2"><label class="form-label">Кабинет</label><input type="text" class="form-control" id="editSchRoom" required></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-danger" onclick="saveScheduleEdit()">Сохранить</button>
+        </div>
+    </div></div>
+</div>
+
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -120,12 +152,14 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
 <script>
 let scheduleData = [], groupsData = [];
+const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
 async function load() {
     const [sR, gR] = await Promise.all([
-        fetch('../api/sync.php?action=get_schedule').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json())
+        fetch(API_BASE + '?action=get_schedule').then(r=>r.json()),
+        fetch(API_BASE + '?action=get_groups').then(r=>r.json())
     ]);
     scheduleData = sR.success ? sR.data : [];
     groupsData = gR.success ? gR.data : [];
@@ -133,9 +167,11 @@ async function load() {
     sel.innerHTML = groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
     const tb = document.getElementById('scheduleBody');
     if(scheduleData.length===0) { tb.innerHTML='<tr><td colspan="6" class="text-center">Нет занятий</td></tr>'; return; }
-    tb.innerHTML = scheduleData.map(s=>`
-        <tr><td>${s.group_name}</td><td>${s.subject}</td><td>${s.day_of_week}</td><td>${s.start_time||s.start_time.substring?.(0,5)||'-'}-${s.end_time||s.end_time.substring?.(0,5)||'-'}</td><td>${s.classroom}</td><td><button class="btn btn-sm btn-danger" onclick="delSchedule(${s.id})"><i class="bi bi-trash"></i></button></td></tr>
-    `).join('');
+    tb.innerHTML = scheduleData.map(s=>{
+        const st = (s.start_time||'').substring(0,5);
+        const et = (s.end_time||'').substring(0,5);
+        return `<tr><td>${s.group_name}</td><td>${s.subject}</td><td>${s.day_of_week}</td><td>${st}-${et}</td><td>${s.classroom}</td>                        <td><button class="btn btn-sm btn-primary me-1" onclick="editSchedule(${s.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="delSchedule(${s.id})"><i class="bi bi-trash"></i></button></td></tr>`;
+    }).join('');
 }
 async function addSchedule() {
     const fd = new FormData();
@@ -147,15 +183,49 @@ async function addSchedule() {
     fd.append('start_time',document.getElementById('schStart').value+':00');
     fd.append('end_time',document.getElementById('schEnd').value+':00');
     fd.append('classroom',document.getElementById('schRoom').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Занятие добавлено!','success'); document.getElementById('addScheduleForm').reset(); load(); }
     else showToast(d.message||'Ошибка','error');
 }
+
+function editSchedule(id) {
+    const s = scheduleData.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('editSchId').value = s.id;
+    const sel = document.getElementById('editSchGroup');
+    sel.innerHTML = groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+    sel.value = s.group_name;
+    document.getElementById('editSchSubject').value = s.subject;
+    document.getElementById('editSchTeacher').value = s.teacher_name;
+    document.getElementById('editSchDay').value = s.day_of_week;
+    document.getElementById('editSchStart').value = (s.start_time||'').substring(0,5);
+    document.getElementById('editSchEnd').value = (s.end_time||'').substring(0,5);
+    document.getElementById('editSchRoom').value = s.classroom;
+    scheduleModal.show();
+}
+
+async function saveScheduleEdit() {
+    const fd = new FormData();
+    fd.append('action','update_schedule');
+    fd.append('id',document.getElementById('editSchId').value);
+    fd.append('group_name',document.getElementById('editSchGroup').value);
+    fd.append('subject',document.getElementById('editSchSubject').value);
+    fd.append('teacher_name',document.getElementById('editSchTeacher').value);
+    fd.append('day_of_week',document.getElementById('editSchDay').value);
+    fd.append('start_time',document.getElementById('editSchStart').value+':00');
+    fd.append('end_time',document.getElementById('editSchEnd').value+':00');
+    fd.append('classroom',document.getElementById('editSchRoom').value);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Занятие обновлено!','success'); scheduleModal.hide(); load(); }
+    else showToast(d.message||'Ошибка','error');
+}
+
 async function delSchedule(id) {
     if(!confirm('Удалить?')) return;
     const fd = new FormData(); fd.append('action','delete_schedule'); fd.append('id',id);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Удалено!','success'); load(); }
 }

@@ -24,7 +24,7 @@ if (isset($_SESSION['user_id'])) {
     <title>Вход — Учеба24</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/neural-network.css">
+    <link rel="stylesheet" href="assets/css/neural-network.css">
 </head>
 <body class="role-student">
     <!-- Живой фон -->
@@ -34,8 +34,8 @@ if (isset($_SESSION['user_id'])) {
     <!-- Карточка входа -->
     <div class="neural-form neural-fade-in">
         <div class="text-center mb-4">
-            <div style="font-size: 4rem; animation: iconBounce 2s ease-in-out infinite;">
-                <i class="bi bi-journal-code" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            <div class="logo-icon" style="animation: iconBounce 2s ease-in-out infinite;">
+                <i class="bi bi-journal-code"></i>
             </div>
             <h2 class="neural-greeting" style="font-size: 2rem; margin-top: 10px;">Учеба24</h2>
             <p class="text-muted">Вход в систему</p>
@@ -73,8 +73,8 @@ if (isset($_SESSION['user_id'])) {
             </small>
         </div>
         
-        <div class="mt-4 p-3 rounded" style="background: rgba(102, 126, 234, 0.1);">
-            <small class="text-muted">
+        <div class="mt-4 info-box">
+            <small>
                 <i class="bi bi-shield-check me-1"></i>
                 Безопасный вход с шифрованием паролей
             </small>
@@ -82,7 +82,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/neural-network.js"></script>
+    <script src="assets/js/neural-network.js"></script>
     <script>
         // Эффект при отправке формы
         document.getElementById('loginForm').addEventListener('submit', function(e) {

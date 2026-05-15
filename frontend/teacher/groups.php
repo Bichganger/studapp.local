@@ -96,41 +96,40 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
-let groupsData = [], studentsData = [];
 async function load() {
-    const [g,u] = await Promise.all([
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_users').then(r=>r.json())
-    ]);
-    groupsData = g.success ? g.data : [];
-    studentsData = (u.success?u.data:[]).filter(x=>x.role==='student');
-    const tb = document.getElementById('groupsBody');
-    if(groupsData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет групп</td></tr>'; return; }
-    tb.innerHTML = groupsData.map(gr=>{
-        const count = studentsData.filter(s=>s.group_name===gr.name).length;
-        return `<tr><td><strong>${gr.name}</strong></td><td>${gr.specialty}</td><td>${gr.course}</td><td><span class="badge bg-success">${count}</span></td>
-        <td><button class="btn btn-sm btn-info" onclick="showStudents('${gr.name}')">Показать</button></td></tr>`;
-    }).join('');
+    try {
+        const [g,u] = await Promise.all([
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_users').then(r=>r.json())
+        ]);
+        const groups = g.success ? g.data : [];
+        const users = u.success ? u.data : [];
+        const tb = document.getElementById('groupsBody');
+        if(groups.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет групп</td></tr>'; return; }
+        tb.innerHTML = groups.map(gr=>{
+            const studs = users.filter(u=>u.group_name===gr.name && u.role==='student');
+            return `<tr>
+                <td>${gr.name}</td>
+                <td>${gr.specialty||'-'}</td>
+                <td>${gr.course||'-'}</td>
+                <td><button class="btn btn-sm btn-info" onclick="viewStudents('${gr.name}')"><i class="bi bi-people"></i> ${studs.length}</button></td>
+            </tr>`;
+        }).join('');
+    } catch(e) { console.error(e); }
 }
-function showStudents(groupName) {
-    const students = studentsData.filter(s=>s.group_name===groupName);
-    const list = document.getElementById('studentsList');
-    list.innerHTML = students.length===0 ? '<li class="list-group-item text-muted">Нет студентов</li>' : 
-        students.map(s=>`<li class="list-group-item">${s.full_name}</li>`).join('');
-    new bootstrap.Modal(document.getElementById('studentsModal')).show();
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+function viewStudents(group) {
+    fetch(API_BASE + '?action=get_users').then(r=>r.json()).then(d=>{
+        const users = d.success ? d.data : [];
+        const studs = users.filter(u=>u.group_name===group && u.role==='student');
+        const tb = document.getElementById('studentsBody');
+        if(studs.length===0) { tb.innerHTML='<tr><td colspan="2" class="text-center">Нет студентов</td></tr>'; }
+        else { tb.innerHTML = studs.map(s=>`<tr><td>${s.full_name}</td><td>${s.email||'-'}</td></tr>`).join(''); }
+        document.getElementById('studentsModalTitle').textContent = `Студенты группы ${group}`;
+        new bootstrap.Modal(document.getElementById('studentsModal')).show();
+    });
 }
 load();
 </script>

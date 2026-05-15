@@ -24,30 +24,31 @@ if (isset($_SESSION['user_id'])) {
     <title>Учеба24 — Главная</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/neural-network.css">
+    <link rel="stylesheet" href="assets/css/neural-network.css">
     <style>
         .hero-section {
             min-height: 100vh;
-            padding: 80px 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 80px 0 60px;
+            background: transparent;
         }
         .main-icon {
             width: 120px;
             height: 120px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
+            margin: 0 auto 25px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.4);
         }
         .main-title {
             color: #fff !important;
             text-shadow: 0 4px 20px rgba(0,0,0,0.5);
             font-weight: 800;
+            letter-spacing: 2px;
         }
         .feature-card {
             background: rgba(255, 255, 255, 0.95) !important;
@@ -56,11 +57,17 @@ if (isset($_SESSION['user_id'])) {
             padding: 30px 20px;
             height: 100%;
             border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+
     </style>
 </head>
-<body class="role-student">
+<body class="role-student home-page">
     <div class="neural-bg"></div>
     <canvas id="neuralNetworkCanvas"></canvas>
     
@@ -128,6 +135,6 @@ if (isset($_SESSION['user_id'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/neural-network.js"></script>
+    <script src="assets/js/neural-network.js"></script>
 </body>
 </html>

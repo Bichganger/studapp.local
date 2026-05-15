@@ -88,29 +88,40 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
 async function load() {
-    const r = await fetch('../api/sync.php?action=get_schedule').then(r=>r.json());
-    const data = r.success ? r.data : [];
-    const tb = document.getElementById('scheduleBody');
-    if(data.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет занятий</td></tr>'; return; }
-    const days = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
-    const sorted = data.sort((a,b)=>days.indexOf(a.day_of_week)-days.indexOf(b.day_of_week));
-    tb.innerHTML = sorted.map(x=>`
-        <tr><td>${x.day_of_week}</td><td>${x.subject}</td><td>${x.teacher_name}</td><td>${(x.start_time||'').substring(0,5)}-${(x.end_time||'').substring(0,5)}</td><td>${x.classroom}</td></tr>
-    `).join('');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+    try {
+        const [s,g] = await Promise.all([
+            fetch(API_BASE + '?action=get_schedule').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json())
+        ]);
+        const schedule = s.success ? s.data : [];
+        const groups = g.success ? g.data : [];
+        const today = new Date().toLocaleDateString('ru-RU',{weekday:'long'}).toLowerCase();
+        const todayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===today);
+
+        const tl = document.getElementById('todayList');
+        if(todayClasses.length===0) { tl.innerHTML='<div class="list-group-item text-muted">Сегодня нет занятий</div>'; return; }
+        tl.innerHTML = todayClasses.map(x=>{
+            const st=(x.start_time||'').substring(0,5);
+            const et=(x.end_time||'').substring(0,5);
+            return `<div class="list-group-item"><strong>${x.subject}</strong><br><small class="text-muted">${st}-${et} | Каб. ${x.classroom}</small></div>`;
+        }).join('');
+
+        const tb = document.getElementById('weekBody');
+        const days = ['понедельник','вторник','среда','четверг','пятница','суббота'];
+        tb.innerHTML = days.map(d=>{
+            const dayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===d);
+            if(dayClasses.length===0) return '';
+            return `<tr><td class="fw-bold text-capitalize">${d}</td><td>`+dayClasses.map(x=>{
+                const st=(x.start_time||'').substring(0,5);
+                const et=(x.end_time||'').substring(0,5);
+                return `<div class="mb-1"><strong>${x.subject}</strong> — ${x.teacher_name}<br><small class="text-muted">${st}-${et} | Каб. ${x.classroom}</small></div>`;
+            }).join('')+`</td></tr>`;
+        }).filter(Boolean).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

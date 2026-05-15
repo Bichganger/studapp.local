@@ -90,6 +90,32 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 
+<div class="modal fade" id="libraryModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="libraryModalTitle">Редактировать материал</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <form id="editLibraryForm">
+                <input type="hidden" id="editLibId">
+                <div class="mb-2"><label class="form-label">Название</label><input type="text" class="form-control" id="editLibTitle" required></div>
+                <div class="mb-2"><label class="form-label">Описание</label><textarea class="form-control" id="editLibDesc" rows="2"></textarea></div>
+                <div class="mb-2"><label class="form-label">Тип</label>
+                    <select class="form-select" id="editLibType">
+                        <option value="document">Документ</option>
+                        <option value="presentation">Презентация</option>
+                        <option value="code">Код</option>
+                        <option value="video">Видео</option>
+                    </select>
+                </div>
+                <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="editLibGroup"><option value="">Все группы</option></select></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-danger" onclick="saveLibraryEdit()">Сохранить</button>
+        </div>
+    </div></div>
+</div>
+
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -114,12 +140,14 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
 <script>
 let libraryData = [], groupsData = [];
+const libraryModal = new bootstrap.Modal(document.getElementById('libraryModal'));
 async function loadLibrary() {
     const [libR, grpR] = await Promise.all([
-        fetch('../api/sync.php?action=get_library').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json())
+        fetch(API_BASE + '?action=get_library').then(r=>r.json()),
+        fetch(API_BASE + '?action=get_groups').then(r=>r.json())
     ]);
     libraryData = libR.success ? libR.data : [];
     groupsData = grpR.success ? grpR.data : [];
@@ -128,7 +156,7 @@ async function loadLibrary() {
     const tb = document.getElementById('libraryBody');
     if(libraryData.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет материалов</td></tr>'; return; }
     tb.innerHTML = libraryData.map(l=>`
-        <tr><td><strong>${l.title}</strong><br><small class="text-muted">${l.description||''}</small></td><td><span class="badge bg-info">${l.file_type||'document'}</span></td><td>${l.group_name||'Все'}</td><td><button class="btn btn-sm btn-danger" onclick="delLibrary(${l.id})"><i class="bi bi-trash"></i></button></td></tr>
+        <tr><td><strong>${l.title}</strong><br><small class="text-muted">${l.description||''}</small></td><td><span class="badge bg-info">${l.file_type||'document'}</span></td><td>${l.group_name||'Все'}</td>                        <td><button class="btn btn-sm btn-primary me-1" onclick="editLibrary(${l.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="delLibrary(${l.id})"><i class="bi bi-trash"></i></button></td></tr>
     `).join('');
 }
 async function addLibrary() {
@@ -138,15 +166,43 @@ async function addLibrary() {
     fd.append('description',document.getElementById('libDesc').value);
     fd.append('file_type',document.getElementById('libType').value);
     fd.append('group_name',document.getElementById('libGroup').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Материал добавлен!','success'); document.getElementById('addLibraryForm').reset(); loadLibrary(); }
     else showToast(d.message||'Ошибка','error');
 }
+
+function editLibrary(id) {
+    const l = libraryData.find(x => x.id === id);
+    if (!l) return;
+    document.getElementById('editLibId').value = l.id;
+    document.getElementById('editLibTitle').value = l.title;
+    document.getElementById('editLibDesc').value = l.description || '';
+    document.getElementById('editLibType').value = l.file_type || 'document';
+    const sel = document.getElementById('editLibGroup');
+    sel.innerHTML = '<option value="">Все группы</option>' + groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+    sel.value = l.group_name || '';
+    libraryModal.show();
+}
+
+async function saveLibraryEdit() {
+    const fd = new FormData();
+    fd.append('action','update_library');
+    fd.append('id',document.getElementById('editLibId').value);
+    fd.append('title',document.getElementById('editLibTitle').value);
+    fd.append('description',document.getElementById('editLibDesc').value);
+    fd.append('file_type',document.getElementById('editLibType').value);
+    fd.append('group_name',document.getElementById('editLibGroup').value);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Материал обновлен!','success'); libraryModal.hide(); loadLibrary(); }
+    else showToast(d.message||'Ошибка','error');
+}
+
 async function delLibrary(id) {
     if(!confirm('Удалить?')) return;
     const fd = new FormData(); fd.append('action','delete_library'); fd.append('id',id);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Удалено!','success'); loadLibrary(); }
 }

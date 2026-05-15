@@ -82,6 +82,24 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 
+<div class="modal fade" id="groupModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="groupModalTitle">Редактировать группу</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <form id="groupForm">
+                <input type="hidden" id="editGroupId">
+                <div class="mb-3"><label class="form-label">Название</label><input type="text" class="form-control" id="editGroupName" required></div>
+                <div class="mb-3"><label class="form-label">Специальность</label><input type="text" class="form-control" id="editGroupSpec" required></div>
+                <div class="mb-3"><label class="form-label">Курс</label><input type="number" class="form-control" id="editGroupCourse" min="1" max="5" required></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-danger" onclick="saveGroup()">Сохранить</button>
+        </div>
+    </div></div>
+</div>
+
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -106,15 +124,17 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
 <script>
 let groupsData = [];
+const groupModal = new bootstrap.Modal(document.getElementById('groupModal'));
 async function loadGroups() {
-    const r = await fetch('../api/sync.php?action=get_groups').then(r=>r.json());
+    const r = await fetch(API_BASE + '?action=get_groups').then(r=>r.json());
     groupsData = r.success ? r.data : [];
     const tb = document.getElementById('groupsBody');
     if(groupsData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет групп</td></tr>'; return; }
     tb.innerHTML = groupsData.map(g=>`
-        <tr><td><strong>${g.name}</strong></td><td>${g.specialty}</td><td><span class="badge bg-info">${g.course}</span></td><td><span class="badge bg-success">${g.student_count||0}</span></td><td><button class="btn btn-sm btn-danger" onclick="delGroup(${g.id})"><i class="bi bi-trash"></i></button></td></tr>
+        <tr><td><strong>${g.name}</strong></td><td>${g.specialty}</td><td><span class="badge bg-info">${g.course}</span></td><td><span class="badge bg-success">${g.student_count||0}</span></td>                        <td><button class="btn btn-sm btn-primary me-1" onclick="editGroup(${g.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="delGroup(${g.id})"><i class="bi bi-trash"></i></button></td></tr>
     `).join('');
 }
 async function addGroup() {
@@ -127,15 +147,46 @@ async function addGroup() {
     fd.append('name',name);
     fd.append('specialty',specialty);
     fd.append('course',course);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Группа создана!','success'); document.getElementById('addGroupForm').reset(); loadGroups(); }
     else showToast(d.message||'Ошибка','error');
 }
+
+function editGroup(id) {
+    const g = groupsData.find(x => x.id === id);
+    if (!g) return;
+    document.getElementById('editGroupId').value = g.id;
+    document.getElementById('editGroupName').value = g.name;
+    document.getElementById('editGroupSpec').value = g.specialty;
+    document.getElementById('editGroupCourse').value = g.course;
+    document.getElementById('groupModalTitle').textContent = 'Редактировать группу';
+    groupModal.show();
+}
+
+async function saveGroup() {
+    const id = document.getElementById('editGroupId').value;
+    const fd = new FormData();
+    fd.append('action', 'update_group');
+    fd.append('id', id);
+    fd.append('name', document.getElementById('editGroupName').value.trim());
+    fd.append('specialty', document.getElementById('editGroupSpec').value.trim());
+    fd.append('course', document.getElementById('editGroupCourse').value);
+    const r = await fetch(API_BASE, {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.success) {
+        showToast('Группа обновлена!','success');
+        groupModal.hide();
+        loadGroups();
+    } else {
+        showToast(d.message||'Ошибка','error');
+    }
+}
+
 async function delGroup(id) {
     if(!confirm('Удалить группу?')) return;
     const fd = new FormData(); fd.append('action','delete_group'); fd.append('id',id);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Группа удалена!','success'); loadGroups(); }
 }

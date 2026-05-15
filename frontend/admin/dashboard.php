@@ -135,14 +135,15 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
 <script>
 async function loadStats() {
     try {
         const [u, g, s, n] = await Promise.all([
-            fetch('../api/sync.php?action=get_users').then(r=>r.json()),
-            fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
-            fetch('../api/sync.php?action=get_schedule').then(r=>r.json()),
-            fetch('../api/sync.php?action=get_notifications').then(r=>r.json())
+            fetch(API_BASE + '?action=get_users').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_schedule').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_notifications').then(r=>r.json())
         ]);
         
         const users = u.success ? u.data : [];

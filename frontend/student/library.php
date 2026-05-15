@@ -55,7 +55,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead><tr><th>Название</th><th>Тип</th><th>Группа</th><th>Описание</th></tr></thead>
-                    <tbody id="libBody"><tr><td colspan="4" class="text-center">Загрузка...</td></tr></tbody>
+                    <tbody id="libraryBody"><tr><td colspan="4" class="text-center">Загрузка...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -88,27 +88,25 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
 async function load() {
-    const r = await fetch('../api/sync.php?action=get_library').then(r=>r.json());
-    const data = r.success ? r.data : [];
-    const tb = document.getElementById('libBody');
-    if(data.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет материалов</td></tr>'; return; }
-    tb.innerHTML = data.map(x=>`
-        <tr><td><strong>${x.title}</strong></td><td><span class="badge bg-info">${x.file_type||'document'}</span></td><td>${x.group_name||'Все'}</td><td>${x.description||'-'}</td></tr>
-    `).join('');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+    try {
+        const r = await fetch(API_BASE + '?action=get_library').then(r=>r.json());
+        const items = r.success ? r.data : [];
+        const tb = document.getElementById('libraryBody');
+        if(items.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет материалов</td></tr>'; return; }
+        tb.innerHTML = items.map(i=>{
+            const icon = i.file_type==='document'?'bi-file-earmark-text':i.file_type==='presentation'?'bi-file-earmark-slides':i.file_type==='video'?'bi-file-earmark-play':'bi-file-earmark-code';
+            return `<tr>
+                <td><i class="bi ${icon} me-2"></i>${i.title}</td>
+                <td>${i.description||'-'}</td>
+                <td><span class="badge bg-secondary">${i.file_type}</span></td>
+                <td>${i.group_name||'Все'}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

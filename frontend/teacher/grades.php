@@ -115,57 +115,25 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
-let studentsData = [], groupsData = [], gradesData = [];
 async function load() {
-    const [u,g,r] = await Promise.all([
-        fetch('../api/sync.php?action=get_users').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_grades').then(r=>r.json())
-    ]);
-    studentsData = (u.success?u.data:[]).filter(x=>x.role==='student');
-    groupsData = g.success?g.data:[];
-    gradesData = r.success?r.data:[];
-
-    const st = document.getElementById('gStudent');
-    st.innerHTML = studentsData.map(s=>`<option value="${s.id}" data-group="${s.group_name||''}">${s.full_name}</option>`).join('');
-    const gr = document.getElementById('gGroup');
-    gr.innerHTML = groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
-
-    const tb = document.getElementById('gradesBody');
-    if(gradesData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет оценок</td></tr>'; return; }
-    tb.innerHTML = gradesData.map(x=>`
-        <tr><td>${x.date}</td><td>${x.student_name}</td><td>${x.group_name}</td><td>${x.subject}</td>
-        <td><span class="badge bg-${x.grade>=4?'success':x.grade==3?'warning':'danger'}">${x.grade}</span></td></tr>
-    `).join('');
-}
-async function addGrade() {
-    const studentId = document.getElementById('gStudent').value;
-    const student = studentsData.find(s=>s.id==studentId);
-    const fd = new FormData();
-    fd.append('action','add_grade');
-    fd.append('student_id',studentId);
-    fd.append('student_name',student?student.full_name:'');
-    fd.append('group_name',document.getElementById('gGroup').value);
-    fd.append('subject',document.getElementById('gSubject').value);
-    fd.append('grade',document.getElementById('gGrade').value);
-    fd.append('date',document.getElementById('gDate').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
-    const d = await r.json();
-    if(d.success) { showToast('Оценка сохранена!','success'); document.getElementById('gradeForm').reset(); load(); }
-    else showToast(d.message||'Ошибка','error');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+    try {
+        const r = await fetch(API_BASE + '?action=get_grades').then(r=>r.json());
+        const grades = r.success ? r.data : [];
+        const tb = document.getElementById('gradesBody');
+        if(grades.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет оценок</td></tr>'; return; }
+        tb.innerHTML = grades.map(g=>`
+            <tr>
+                <td>${g.student_name}</td>
+                <td>${g.subject}</td>
+                <td>${g.grade}</td>
+                <td>${g.date||'-'}</td>
+                <td>${g.comment||'-'}</td>
+            </tr>
+        `).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

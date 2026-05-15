@@ -161,6 +161,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
 <script>
 let usersData = [];
 let groupsData = [];
@@ -168,7 +169,7 @@ const userModal = new bootstrap.Modal(document.getElementById('userModal'));
 
 async function loadUsers() {
     try {
-        const response = await fetch('../api/sync.php?action=get_users');
+        const response = await fetch(API_BASE + '?action=get_users');
         const result = await response.json();
         usersData = result.success ? result.data : [];
         renderUsers();
@@ -179,7 +180,7 @@ async function loadUsers() {
 
 async function loadGroups() {
     try {
-        const response = await fetch('../api/sync.php?action=get_groups');
+        const response = await fetch(API_BASE + '?action=get_groups');
         const result = await response.json();
         groupsData = result.success ? result.data : [];
         populateGroupSelect();
@@ -262,7 +263,7 @@ async function saveUser() {
         if (id) formData.append('id', id);
         Object.keys(userData).forEach(key => formData.append(key, userData[key]));
         
-        const response = await fetch('../api/sync.php', {
+        const response = await fetch(API_BASE, {
             method: 'POST',
             body: formData
         });
@@ -288,7 +289,7 @@ async function deleteUser(id) {
         formData.append('action', 'delete_user');
         formData.append('id', id);
         
-        const response = await fetch('../api/sync.php', {
+        const response = await fetch(API_BASE, {
             method: 'POST',
             body: formData
         });

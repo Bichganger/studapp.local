@@ -128,14 +128,16 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
 async function loadStats() {
     try {
         const [n, a, g, s] = await Promise.all([
-            fetch('../api/sync.php?action=get_notifications').then(r=>r.json()),
-            fetch('../api/sync.php?action=get_assignments').then(r=>r.json()),
-            fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
-            fetch('../api/sync.php?action=get_schedule').then(r=>r.json())
+            fetch(API_BASE + '?action=get_notifications').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_assignments').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_schedule').then(r=>r.json())
         ]);
         const notifs = n.success ? n.data : [];
         const assigns = a.success ? a.data : [];
@@ -157,18 +159,8 @@ async function loadStats() {
         al.innerHTML = pending.slice(0,5).map(x=>`<div class="list-group-item"><strong>${x.title}</strong><br><small class="text-muted">${x.student_name} — ${x.subject}</small></div>`).join('') || '<div class="list-group-item text-muted">Нет работ на проверке</div>';
     } catch(e) { console.error(e); }
 }
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
-}
+
+// Запускаем загрузку данных
 loadStats();
 </script>
 </body>

@@ -88,29 +88,25 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
 async function load() {
-    const r = await fetch('../api/sync.php?action=get_grades').then(r=>r.json());
-    const data = r.success ? r.data : [];
-    const tb = document.getElementById('gradesBody');
-    if(data.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет оценок</td></tr>'; return; }
-    tb.innerHTML = data.map(x=>`
-        <tr><td>${x.date||'-'}</td><td>${x.subject}</td>
-        <td><span class="badge bg-${x.grade>=4?'success':x.grade==3?'warning':'danger'}">${x.grade}</span></td>
-        <td>${x.teacher_name||'-'}</td></tr>
-    `).join('');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+    try {
+        const r = await fetch(API_BASE + '?action=get_grades').then(r=>r.json());
+        const grades = r.success ? r.data : [];
+        const tb = document.getElementById('gradesBody');
+        if(grades.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет оценок</td></tr>'; return; }
+        tb.innerHTML = grades.map(g=>`
+            <tr>
+                <td>${g.subject}</td>
+                <td>${g.grade}</td>
+                <td>${g.date||'-'}</td>
+                <td>${g.teacher_name||'-'}</td>
+                <td>${g.comment||'-'}</td>
+            </tr>
+        `).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

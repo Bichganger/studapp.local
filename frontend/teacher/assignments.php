@@ -119,53 +119,38 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
-let assignData = [];
-const checkModal = new bootstrap.Modal(document.getElementById('checkModal'));
-
 async function load() {
-    const r = await fetch('../api/sync.php?action=get_assignments').then(r=>r.json());
-    assignData = r.success ? r.data : [];
-    const tb = document.getElementById('assignBody');
-    if(assignData.length===0) { tb.innerHTML='<tr><td colspan="6" class="text-center">Нет работ</td></tr>'; return; }
-    tb.innerHTML = assignData.map(a=>`
-        <tr><td>${a.student_name}</td><td>${a.group_name}</td><td>${a.subject}</td><td>${a.title}</td>
-        <td><span class="badge bg-${a.status==='accepted'?'success':a.status==='rejected'?'danger':'warning'}">${a.status||'new'}</span></td>
-        <td><button class="btn btn-sm btn-info" onclick="openCheck(${a.id})">Проверить</button></td></tr>
-    `).join('');
+    try {
+        const r = await fetch(API_BASE + '?action=get_assignments').then(r=>r.json());
+        const assigns = r.success ? r.data : [];
+        const tb = document.getElementById('assignmentsBody');
+        if(assigns.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет работ</td></tr>'; return; }
+        tb.innerHTML = assigns.map(a=>{
+            const st = a.status==='pending'?'<span class="badge bg-warning">На проверке</span>':
+                       a.status==='graded'?'<span class="badge bg-success">Проверено</span>':
+                       '<span class="badge bg-secondary">Нет статуса</span>';
+            return `<tr>
+                <td>${a.title}</td>
+                <td>${a.subject}</td>
+                <td>${a.student_name}</td>
+                <td>${a.due_date||'-'}</td>
+                <td>${st}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) { console.error(e); }
 }
-function openCheck(id) {
-    const a = assignData.find(x=>x.id==id);
-    if(!a) return;
-    document.getElementById('checkId').value = id;
-    document.getElementById('checkStatus').value = a.status||'accepted';
-    document.getElementById('checkComment').value = a.teacher_comment||'';
-    document.getElementById('checkGrade').value = a.grade||'';
-    checkModal.show();
-}
-async function submitCheck() {
+async function gradeAssignment(id, grade) {
     const fd = new FormData();
-    fd.append('action','update_assignment');
-    fd.append('id',document.getElementById('checkId').value);
-    fd.append('status',document.getElementById('checkStatus').value);
-    fd.append('teacher_comment',document.getElementById('checkComment').value);
-    fd.append('grade',document.getElementById('checkGrade').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    fd.append('action','grade_assignment');
+    fd.append('id',id);
+    fd.append('grade',grade);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
-    if(d.success) { showToast('Проверено!','success'); checkModal.hide(); load(); }
+    if(d.success) { showToast('Оценка поставлена!','success'); load(); }
     else showToast(d.message||'Ошибка','error');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
 }
 load();
 </script>

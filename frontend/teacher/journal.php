@@ -115,57 +115,33 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
+<script src="../assets/js/accessibility.js"></script>
 <script>
-let studentsData = [], groupsData = [], journalData = [];
 async function load() {
-    const [u,g,j] = await Promise.all([
-        fetch('../api/sync.php?action=get_users').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_journal').then(r=>r.json())
-    ]);
-    studentsData = (u.success?u.data:[]).filter(x=>x.role==='student');
-    groupsData = g.success?g.data:[];
-    journalData = j.success?j.data:[];
-
-    const st = document.getElementById('jStudent');
-    st.innerHTML = studentsData.map(s=>`<option value="${s.id}" data-group="${s.group_name||''}">${s.full_name} (${s.group_name||'без группы'})</option>`).join('');
-    const gr = document.getElementById('jGroup');
-    gr.innerHTML = groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
-
-    const tb = document.getElementById('journalBody');
-    if(journalData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет записей</td></tr>'; return; }
-    tb.innerHTML = journalData.map(x=>`
-        <tr><td>${x.date}</td><td>${x.student_name}</td><td>${x.group_name}</td><td>${x.subject}</td>
-        <td><span class="badge bg-${x.status==='present'?'success':x.status==='absent'?'danger':x.status==='sick'?'warning':'secondary'}">${x.status}</span></td></tr>
-    `).join('');
-}
-async function addJournal() {
-    const studentId = document.getElementById('jStudent').value;
-    const student = studentsData.find(s=>s.id==studentId);
-    const fd = new FormData();
-    fd.append('action','add_journal');
-    fd.append('student_id',studentId);
-    fd.append('student_name',student?student.full_name:'');
-    fd.append('group_name',document.getElementById('jGroup').value);
-    fd.append('subject',document.getElementById('jSubject').value);
-    fd.append('date',document.getElementById('jDate').value);
-    fd.append('status',document.getElementById('jStatus').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
-    const d = await r.json();
-    if(d.success) { showToast('Отмечено!','success'); document.getElementById('journalForm').reset(); load(); }
-    else showToast(d.message||'Ошибка','error');
-}
-function saveAccessibility() {
-    const s = {fontSize:localStorage.getItem('a11y_fontSize')||'100',highContrast:document.getElementById('highContrast').checked,largeButtons:document.getElementById('largeButtons').checked};
-    localStorage.setItem('accessibility_settings',JSON.stringify(s));
-    showToast('Настройки сохранены!','success');
-    bootstrap.Modal.getInstance(document.getElementById('accessibilityModal')).hide();
-}
-function showToast(m,t) {
-    const c=document.querySelector('.toast-container'),el=document.createElement('div');
-    el.className=`toast align-items-center text-white bg-${t==='success'?'success':t==='error'?'danger':'primary'} border-0`;
-    el.innerHTML=`<div class="d-flex"><div class="toast-body">${m}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
-    c.appendChild(el); new bootstrap.Toast(el,{delay:3000}).show(); el.addEventListener('hidden.bs.toast',()=>el.remove());
+    try {
+        const [g,j] = await Promise.all([
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_journal').then(r=>r.json())
+        ]);
+        const groups = g.success ? g.data : [];
+        const journal = j.success ? j.data : [];
+        
+        const gs = document.getElementById('groupSelect');
+        gs.innerHTML = '<option value="">Выберите группу</option>' + groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+        
+        const tb = document.getElementById('journalBody');
+        if(journal.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет записей</td></tr>'; return; }
+        tb.innerHTML = journal.map(r=>`
+            <tr>
+                <td>${r.student_name}</td>
+                <td>${r.subject}</td>
+                <td>${r.date||'-'}</td>
+                <td>${r.grade||'-'}</td>
+                <td>${r.comment||'-'}</td>
+            </tr>
+        `).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

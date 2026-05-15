@@ -90,6 +90,32 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 
+<div class="modal fade" id="notifModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="notifModalTitle">Редактировать уведомление</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <form id="editNotifForm">
+                <input type="hidden" id="editNotifId">
+                <div class="mb-2"><label class="form-label">Заголовок</label><input type="text" class="form-control" id="editNotifTitle" required></div>
+                <div class="mb-2"><label class="form-label">Сообщение</label><textarea class="form-control" id="editNotifMsg" rows="3" required></textarea></div>
+                <div class="mb-2"><label class="form-label">Кому</label>
+                    <select class="form-select" id="editNotifType">
+                        <option value="all">Всем</option>
+                        <option value="students">Студентам</option>
+                        <option value="teachers">Преподавателям</option>
+                        <option value="group">Группе</option>
+                    </select>
+                </div>
+                <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="editNotifGroup"><option value="">Не выбрано</option></select></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="button" class="btn btn-danger" onclick="saveNotifEdit()">Сохранить</button>
+        </div>
+    </div></div>
+</div>
+
 <div class="modal fade" id="accessibilityModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -114,12 +140,14 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/js/api-config.js"></script>
 <script>
 let notifData = [], groupsData = [];
+const notifModal = new bootstrap.Modal(document.getElementById('notifModal'));
 async function load() {
     const [nR, gR] = await Promise.all([
-        fetch('../api/sync.php?action=get_notifications').then(r=>r.json()),
-        fetch('../api/sync.php?action=get_groups').then(r=>r.json())
+        fetch(API_BASE + '?action=get_notifications').then(r=>r.json()),
+        fetch(API_BASE + '?action=get_groups').then(r=>r.json())
     ]);
     notifData = nR.success ? nR.data : [];
     groupsData = gR.success ? gR.data : [];
@@ -128,7 +156,7 @@ async function load() {
     const tb = document.getElementById('notifBody');
     if(notifData.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет уведомлений</td></tr>'; return; }
     tb.innerHTML = notifData.map(n=>`
-        <tr><td><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></td><td><span class="badge bg-${n.target_type==='all'?'primary':n.target_type==='students'?'success':'info'}">${n.target_type}</span> ${n.target_group||''}</td><td>${n.created_at||'-'}</td><td><button class="btn btn-sm btn-danger" onclick="delNotif(${n.id})"><i class="bi bi-trash"></i></button></td></tr>
+        <tr><td><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></td><td><span class="badge bg-${n.target_type==='all'?'primary':n.target_type==='students'?'success':'info'}">${n.target_type}</span> ${n.target_group||''}</td><td>${n.created_at||'-'}</td>                        <td><button class="btn btn-sm btn-primary me-1" onclick="editNotif(${n.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="delNotif(${n.id})"><i class="bi bi-trash"></i></button></td></tr>
     `).join('');
 }
 async function sendNotification() {
@@ -138,15 +166,43 @@ async function sendNotification() {
     fd.append('message',document.getElementById('notifMsg').value);
     fd.append('target_type',document.getElementById('notifType').value);
     fd.append('target_group',document.getElementById('notifGroup').value);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Уведомление отправлено!','success'); document.getElementById('notifForm').reset(); load(); }
     else showToast(d.message||'Ошибка','error');
 }
+
+function editNotif(id) {
+    const n = notifData.find(x => x.id === id);
+    if (!n) return;
+    document.getElementById('editNotifId').value = n.id;
+    document.getElementById('editNotifTitle').value = n.title;
+    document.getElementById('editNotifMsg').value = n.message;
+    document.getElementById('editNotifType').value = n.target_type;
+    const sel = document.getElementById('editNotifGroup');
+    sel.innerHTML = '<option value="">Не выбрано</option>' + groupsData.map(g=>`<option value="${g.name}">${g.name}</option>`).join('');
+    sel.value = n.target_group || '';
+    notifModal.show();
+}
+
+async function saveNotifEdit() {
+    const fd = new FormData();
+    fd.append('action','update_notification');
+    fd.append('id',document.getElementById('editNotifId').value);
+    fd.append('title',document.getElementById('editNotifTitle').value);
+    fd.append('message',document.getElementById('editNotifMsg').value);
+    fd.append('target_type',document.getElementById('editNotifType').value);
+    fd.append('target_group',document.getElementById('editNotifGroup').value);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Уведомление обновлено!','success'); notifModal.hide(); load(); }
+    else showToast(d.message||'Ошибка','error');
+}
+
 async function delNotif(id) {
     if(!confirm('Удалить?')) return;
     const fd = new FormData(); fd.append('action','delete_notification'); fd.append('id',id);
-    const r = await fetch('../api/sync.php',{method:'POST',body:fd});
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
     if(d.success) { showToast('Удалено!','success'); load(); }
 }
@@ -166,3 +222,5 @@ load();
 </script>
 </body>
 </html>
+cd frontend
+php -S localhost:8000
