@@ -131,29 +131,33 @@ async function load() {
         ]);
         const schedule = s.success ? s.data : [];
         const groups = g.success ? g.data : [];
-        const today = new Date().toLocaleDateString('ru-RU',{weekday:'long'}).toLowerCase();
-        const todayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===today);
-
-        const tl = document.getElementById('todayList');
-        if(todayClasses.length===0) { tl.innerHTML='<div class="list-group-item text-muted">Сегодня нет занятий</div>'; return; }
-        tl.innerHTML = todayClasses.map(x=>{
+        
+        const sg = document.getElementById('sGroup');
+        sg.innerHTML = groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+        
+        const tb = document.getElementById('scheduleBody');
+        if(schedule.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет занятий</td></tr>'; return; }
+        tb.innerHTML = schedule.map(x=>{
             const st=(x.start_time||'').substring(0,5);
             const et=(x.end_time||'').substring(0,5);
-            return `<div class="list-group-item"><strong>${x.subject}</strong><br><small class="text-muted">${x.group_name} | ${st}-${et} | Каб. ${x.classroom}</small></div>`;
+            return `<tr><td class="text-capitalize">${x.day_of_week||'-'}</td><td>${x.group_name||'-'}</td><td>${x.subject||'-'}</td><td>${st}-${et}</td><td>${x.classroom||'-'}</td></tr>`;
         }).join('');
-
-        const tb = document.getElementById('weekBody');
-        const days = ['понедельник','вторник','среда','четверг','пятница','суббота'];
-        tb.innerHTML = days.map(d=>{
-            const dayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===d);
-            if(dayClasses.length===0) return '';
-            return `<tr><td class="fw-bold text-capitalize">${d}</td><td>`+dayClasses.map(x=>{
-                const st=(x.start_time||'').substring(0,5);
-                const et=(x.end_time||'').substring(0,5);
-                return `<div class="mb-1"><strong>${x.subject}</strong> — ${x.group_name}<br><small class="text-muted">${x.teacher_name} | ${st}-${et} | Каб. ${x.classroom}</small></div>`;
-            }).join('')+`</td></tr>`;
-        }).filter(Boolean).join('');
     } catch(e) { console.error(e); }
+}
+async function addSchedule() {
+    const fd = new FormData();
+    fd.append('action','add_schedule');
+    fd.append('group_name',document.getElementById('sGroup').value);
+    fd.append('subject',document.getElementById('sSubject').value.trim());
+    fd.append('teacher_name',document.getElementById('sTeacher').value.trim());
+    fd.append('day_of_week',document.getElementById('sDay').value);
+    fd.append('start_time',document.getElementById('sStart').value+':00');
+    fd.append('end_time',document.getElementById('sEnd').value+':00');
+    fd.append('classroom',document.getElementById('sRoom').value.trim());
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Занятие добавлено!','success'); document.getElementById('scheduleForm').reset(); document.getElementById('sTeacher').value='<?= $name ?>'; load(); }
+    else showToast(d.message||'Ошибка','error');
 }
 load();
 </script>

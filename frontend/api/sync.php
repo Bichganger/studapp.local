@@ -1,8 +1,9 @@
 <?php
 // Основной API для синхронизации данных
 header('Content-Type: application/json');
+// Отключаем вывод ошибок в ответ (логируются в error_log)
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 // Проверка подключения к БД
 try {
@@ -30,11 +31,28 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 try {
     // === ПОЛЬЗОВАТЕЛИ ===
     if ($action === 'get_users') {
-        if ($userRole !== 'admin') {
+        if ($userRole !== 'admin' && $userRole !== 'teacher') {
             echo json_encode(['success' => false, 'error' => 'Доступ запрещен']);
             exit;
         }
         $stmt = $pdo->query("SELECT id, username, full_name, role, group_name, course, email, created_at FROM users ORDER BY id DESC");
+        $users = $stmt->fetchAll();
+        echo json_encode(['success' => true, 'data' => $users]);
+        exit;
+    }
+    
+    if ($action === 'get_users_by_group') {
+        if ($userRole !== 'admin' && $userRole !== 'teacher') {
+            echo json_encode(['success' => false, 'error' => 'Доступ запрещен']);
+            exit;
+        }
+        $groupName = $_GET['group_name'] ?? '';
+        if (!$groupName) {
+            echo json_encode(['success' => false, 'error' => 'Группа не указана']);
+            exit;
+        }
+        $stmt = $pdo->prepare("SELECT id, username, full_name, role, group_name, course, email, created_at FROM users WHERE group_name = ? AND role = 'student' ORDER BY full_name");
+        $stmt->execute([$groupName]);
         $users = $stmt->fetchAll();
         echo json_encode(['success' => true, 'data' => $users]);
         exit;
@@ -63,7 +81,7 @@ try {
         $newId = $pdo->lastInsertId();
         // Обновить счетчик студентов в группе
         if ($groupName && $role === 'student') {
-            $pdo->prepare("UPDATE groups SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")->execute([$groupName, $groupName]);
+            $pdo->prepare("UPDATE `groups` SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")->execute([$groupName, $groupName]);
         }
         echo json_encode(['success' => true, 'id' => $newId]);
         exit;
@@ -79,12 +97,20 @@ try {
             echo json_encode(['success' => false, 'error' => 'ID не указан']);
             exit;
         }
+        
+        // Получить старую группу ДО обновления
+        $stmt = $pdo->prepare("SELECT group_name, role FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $oldUser = $stmt->fetch();
+        $oldGroup = $oldUser ? $oldUser['group_name'] : null;
+        $oldRole = $oldUser ? $oldUser['role'] : null;
+        
         $username = $_POST['username'] ?? '';
         $fullName = $_POST['full_name'] ?? '';
         $role = $_POST['role'] ?? 'student';
         $groupName = $_POST['group'] ?? $_POST['group_name'] ?? null;
         if ($groupName === '') $groupName = null;
-
+        
         $fields = [];
         $params = [];
         if ($username) { $fields[] = "username = ?"; $params[] = $username; }
@@ -102,18 +128,15 @@ try {
         $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        // Обновить счетчики для старой и новой группы
-        $stmt = $pdo->prepare("SELECT group_name, role FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        $u = $stmt->fetch();
-        if ($u && $u['role'] === 'student') {
-            $oldGroup = $u['group_name'];
-            if ($oldGroup) {
-                $pdo->prepare("UPDATE groups SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")->execute([$oldGroup, $oldGroup]);
-            }
-            if ($groupName && $groupName !== $oldGroup) {
-                $pdo->prepare("UPDATE groups SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")->execute([$groupName, $groupName]);
-            }
+        
+        // Обновить счетчики для старой и новой группы (только для студентов)
+        if ($oldRole === 'student' && $oldGroup && $oldGroup !== $groupName) {
+            $pdo->prepare("UPDATE `groups` SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")
+                ->execute([$oldGroup, $oldGroup]);
+        }
+        if ($role === 'student' && $groupName && $groupName !== $oldGroup) {
+            $pdo->prepare("UPDATE `groups` SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")
+                ->execute([$groupName, $groupName]);
         }
         echo json_encode(['success' => true]);
         exit;
@@ -136,7 +159,7 @@ try {
         $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
         $stmt->execute([$id]);
         if ($u && $u['role'] === 'student' && $u['group_name']) {
-            $pdo->prepare("UPDATE groups SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")->execute([$u['group_name'], $u['group_name']]);
+            $pdo->prepare("UPDATE `groups` SET student_count = (SELECT COUNT(*) FROM users WHERE group_name = ? AND role = 'student') WHERE name = ?")->execute([$u['group_name'], $u['group_name']]);
         }
         echo json_encode(['success' => true]);
         exit;
@@ -144,7 +167,7 @@ try {
     
     // === ГРУППЫ ===
     if ($action === 'get_groups') {
-        $stmt = $pdo->query("SELECT * FROM groups ORDER BY id DESC");
+        $stmt = $pdo->query("SELECT * FROM `groups` ORDER BY id DESC");
         $groups = $stmt->fetchAll();
         foreach ($groups as &$group) {
             $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM users WHERE group_name = ? AND role = 'student'");
@@ -164,7 +187,7 @@ try {
         $specialty = $_POST['specialty'] ?? '';
         $course = (int)($_POST['course'] ?? 1);
 
-        $stmt = $pdo->prepare("INSERT INTO groups (name, specialty, course) VALUES (?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO `groups` (name, specialty, course) VALUES (?, ?, ?)");
         $stmt->execute([$groupName, $specialty, $course]);
         echo json_encode(['success' => true, 'id' => $pdo->lastInsertId()]);
         exit;
@@ -184,7 +207,7 @@ try {
         $specialty = $_POST['specialty'] ?? '';
         $course = (int)($_POST['course'] ?? 1);
 
-        $stmt = $pdo->prepare("UPDATE groups SET name = ?, specialty = ?, course = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE `groups` SET name = ?, specialty = ?, course = ? WHERE id = ?");
         $stmt->execute([$name, $specialty, $course, $id]);
         echo json_encode(['success' => true]);
         exit;
@@ -200,14 +223,14 @@ try {
             exit;
         }
         // Получить название группы перед удалением
-        $stmt = $pdo->prepare("SELECT name FROM groups WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT name FROM `groups` WHERE id = ?");
         $stmt->execute([$id]);
         $g = $stmt->fetch();
         if ($g) {
             // Сбросить группу у пользователей
             $pdo->prepare("UPDATE users SET group_name = NULL WHERE group_name = ?")->execute([$g['name']]);
         }
-        $stmt = $pdo->prepare("DELETE FROM groups WHERE id = ?");
+        $stmt = $pdo->prepare("DELETE FROM `groups` WHERE id = ?");
         $stmt->execute([$id]);
         echo json_encode(['success' => true]);
         exit;

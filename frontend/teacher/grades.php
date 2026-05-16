@@ -56,8 +56,8 @@ $name = htmlspecialchars($_SESSION['full_name']);
                 <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Выставить оценку</div>
                 <div class="card-body">
                     <form id="gradeForm">
-                        <div class="mb-2"><label class="form-label">Студент</label><select class="form-select" id="gStudent" required></select></div>
-                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="gGroup" required></select></div>
+                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="gGroup" onchange="onGroupChange()" required></select></div>
+                        <div class="mb-2"><label class="form-label">Студент</label><select class="form-select" id="gStudent" required><option value="">Сначала выберите группу</option></select></div>
                         <div class="mb-2"><label class="form-label">Предмет</label><input type="text" class="form-control" id="gSubject" required></div>
                         <div class="mb-2"><label class="form-label">Оценка</label>
                             <select class="form-select" id="gGrade" required>
@@ -120,20 +120,54 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script>
 async function load() {
     try {
-        const r = await fetch(API_BASE + '?action=get_grades').then(r=>r.json());
+        const [r, g] = await Promise.all([
+            fetch(API_BASE + '?action=get_grades').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json())
+        ]);
         const grades = r.success ? r.data : [];
+        const groups = g.success ? g.data : [];
+        
+        const gg = document.getElementById('gGroup');
+        gg.innerHTML = '<option value="">Выберите группу</option>' + groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+        
         const tb = document.getElementById('gradesBody');
         if(grades.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет оценок</td></tr>'; return; }
-        tb.innerHTML = grades.map(g=>`
+        tb.innerHTML = grades.map(gr=>`
             <tr>
-                <td>${g.student_name}</td>
-                <td>${g.subject}</td>
-                <td>${g.grade}</td>
-                <td>${g.date||'-'}</td>
-                <td>${g.comment||'-'}</td>
+                <td>${gr.date||'-'}</td>
+                <td>${gr.student_name||'-'}</td>
+                <td>${gr.group_name||'-'}</td>
+                <td>${gr.subject||'-'}</td>
+                <td><span class="badge bg-${gr.grade>=4?'success':gr.grade==3?'warning':'danger'}">${gr.grade}</span></td>
             </tr>
         `).join('');
     } catch(e) { console.error(e); }
+}
+
+async function onGroupChange() {
+    const group = document.getElementById('gGroup').value;
+    const studentSel = document.getElementById('gStudent');
+    if(!group) { studentSel.innerHTML='<option value="">Сначала выберите группу</option>'; return; }
+    studentSel.innerHTML = '<option value="">Выберите студента</option>';
+    try {
+        const r = await fetch(API_BASE + '?action=get_users_by_group&group_name=' + encodeURIComponent(group)).then(r=>r.json());
+        const studs = r.success ? r.data : [];
+        studentSel.innerHTML = '<option value="">Выберите студента</option>' + studs.map(s=>`<option value="${s.full_name}">${s.full_name}</option>`).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function addGrade() {
+    const fd = new FormData();
+    fd.append('action','add_grade');
+    fd.append('student_name',document.getElementById('gStudent').value);
+    fd.append('group_name',document.getElementById('gGroup').value);
+    fd.append('subject',document.getElementById('gSubject').value.trim());
+    fd.append('grade',document.getElementById('gGrade').value);
+    fd.append('date',document.getElementById('gDate').value);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Оценка сохранена!','success'); document.getElementById('gradeForm').reset(); load(); }
+    else showToast(d.message||'Ошибка','error');
 }
 load();
 </script>

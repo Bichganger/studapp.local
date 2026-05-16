@@ -80,7 +80,7 @@ if (isset($_SESSION['user_id'])) {
                         <i class="bi bi-journal-code" style="font-size: 4rem; color: #fff;"></i>
                     </div>
                     <h1 class="main-title display-3 mb-3">Учеба24</h1>
-                    <p class="text-white-50 lead fs-4" style="max-width: 600px; margin: 0 auto;">
+                    <p class="text-white-50 lead fs-4" style="max-width: 600px; margin: 0 auto; color: #fff;">
                         Интеллектуальная платформа для современного образования
                     </p>
                 </div>
@@ -89,7 +89,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="row justify-content-center mb-5">
                     <div class="col-auto">
                         <div class="d-flex gap-3 flex-wrap justify-content-center">
-                            <a href="dashboard.php" class="btn neural-btn btn-lg px-5 py-3">
+                            <a href="dashboard.php" class="btn neural-btn btn-lg px-5 py-3 "style="background: linear-gradient(135deg, #f5576c 20%, #f093fb 80%);">
                                 <i class="bi bi-box-arrow-in-right me-2"></i>Войти
                             </a>
                             <a href="register_new.php" class="btn neural-btn btn-lg px-5 py-3" 

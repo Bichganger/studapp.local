@@ -112,29 +112,33 @@ async function load() {
     try {
         const r = await fetch(API_BASE + '?action=get_assignments').then(r=>r.json());
         const assigns = r.success ? r.data : [];
-        const tb = document.getElementById('assignmentsBody');
+        const tb = document.getElementById('assignBody');
         if(assigns.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет работ</td></tr>'; return; }
         tb.innerHTML = assigns.map(a=>{
             const st = a.status==='pending'?'<span class="badge bg-warning">На проверке</span>':
                        a.status==='graded'?'<span class="badge bg-success">Проверено</span>':
+                       a.status==='accepted'?'<span class="badge bg-info">Принято</span>':
+                       a.status==='rejected'?'<span class="badge bg-danger">Отклонено</span>':
                        '<span class="badge bg-secondary">Нет статуса</span>';
             return `<tr>
-                <td>${a.title}</td>
-                <td>${a.subject}</td>
-                <td>${a.due_date||'-'}</td>
+                <td>${a.subject||'-'}</td>
+                <td>${a.title||'-'}</td>
                 <td>${st}</td>
                 <td>${a.grade||'-'}</td>
+                <td>${a.comment||'-'}</td>
             </tr>`;
         }).join('');
     } catch(e) { console.error(e); }
 }
-async function submitAssignment(id) {
+async function submitWork() {
     const fd = new FormData();
-    fd.append('action','submit_assignment');
-    fd.append('id',id);
+    fd.append('action','add_assignment');
+    fd.append('subject',document.getElementById('aSubject').value.trim());
+    fd.append('title',document.getElementById('aTitle').value.trim());
+    fd.append('description',document.getElementById('aDesc').value.trim());
     const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
-    if(d.success) { showToast('Работа отправлена!','success'); load(); }
+    if(d.success) { showToast('Работа отправлена!','success'); document.getElementById('assignForm').reset(); load(); }
     else showToast(d.message||'Ошибка','error');
 }
 load();

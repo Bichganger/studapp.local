@@ -28,22 +28,22 @@ html, body {
 
 /* === NEURAL BUTTON === */
 .neural-btn {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: linear-gradient(135deg, #702b6583 0%, #1f7388 100%);
+    border: none;
     color: #fff !important;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    padding: 12px;
+    border-radius: 10px;
 }
 
 .neural-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: #fff;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
 }
 
 .neural-btn:active {

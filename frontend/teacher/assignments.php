@@ -51,7 +51,12 @@ $name = htmlspecialchars($_SESSION['full_name']);
     </div>
 
     <div class="card">
-        <div class="card-header"><i class="bi bi-list-ul me-2"></i>Работы студентов</div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-list-ul me-2"></i>Работы студентов</span>
+            <select class="form-select form-select-sm w-auto" id="filterGroup" onchange="load()">
+                <option value="">Все группы</option>
+            </select>
+        </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -122,34 +127,64 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script src="../assets/js/api-config.js"></script>
 <script src="../assets/js/accessibility.js"></script>
 <script>
+let allAssignments = [];
+let allGroups = [];
+
 async function load() {
     try {
-        const r = await fetch(API_BASE + '?action=get_assignments').then(r=>r.json());
-        const assigns = r.success ? r.data : [];
-        const tb = document.getElementById('assignmentsBody');
-        if(assigns.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет работ</td></tr>'; return; }
+        const [a, g] = await Promise.all([
+            fetch(API_BASE + '?action=get_assignments').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json())
+        ]);
+        allAssignments = a.success ? a.data : [];
+        allGroups = g.success ? g.data : [];
+        
+        // Заполнить фильтр групп
+        const filterSel = document.getElementById('filterGroup');
+        const currentFilter = filterSel.value;
+        filterSel.innerHTML = '<option value="">Все группы</option>' + allGroups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+        filterSel.value = currentFilter;
+        
+        // Фильтрация
+        const groupFilter = filterSel.value;
+        const assigns = groupFilter ? allAssignments.filter(x => x.group_name === groupFilter) : allAssignments;
+        
+        const tb = document.getElementById('assignBody');
+        if(assigns.length===0) { tb.innerHTML='<tr><td colspan="6" class="text-center">Нет работ</td></tr>'; return; }
         tb.innerHTML = assigns.map(a=>{
             const st = a.status==='pending'?'<span class="badge bg-warning">На проверке</span>':
                        a.status==='graded'?'<span class="badge bg-success">Проверено</span>':
+                       a.status==='accepted'?'<span class="badge bg-info">Принято</span>':
+                       a.status==='rejected'?'<span class="badge bg-danger">Отклонено</span>':
                        '<span class="badge bg-secondary">Нет статуса</span>';
             return `<tr>
-                <td>${a.title}</td>
-                <td>${a.subject}</td>
-                <td>${a.student_name}</td>
-                <td>${a.due_date||'-'}</td>
+                <td>${a.student_name||'-'}</td>
+                <td>${a.group_name||'-'}</td>
+                <td>${a.subject||'-'}</td>
+                <td>${a.title||'-'}</td>
                 <td>${st}</td>
+                <td><button class="btn btn-sm btn-info" onclick="openCheck(${a.id})"><i class="bi bi-check-circle"></i> Проверить</button></td>
             </tr>`;
         }).join('');
     } catch(e) { console.error(e); }
 }
-async function gradeAssignment(id, grade) {
+function openCheck(id) {
+    document.getElementById('checkId').value = id;
+    document.getElementById('checkStatus').value = 'accepted';
+    document.getElementById('checkComment').value = '';
+    document.getElementById('checkGrade').value = '';
+    new bootstrap.Modal(document.getElementById('checkModal')).show();
+}
+async function submitCheck() {
     const fd = new FormData();
-    fd.append('action','grade_assignment');
-    fd.append('id',id);
-    fd.append('grade',grade);
+    fd.append('action','update_assignment');
+    fd.append('id',document.getElementById('checkId').value);
+    fd.append('status',document.getElementById('checkStatus').value);
+    fd.append('teacher_comment',document.getElementById('checkComment').value);
+    fd.append('grade',document.getElementById('checkGrade').value);
     const r = await fetch(API_BASE,{method:'POST',body:fd});
     const d = await r.json();
-    if(d.success) { showToast('Оценка поставлена!','success'); load(); }
+    if(d.success) { showToast('Проверено!','success'); bootstrap.Modal.getInstance(document.getElementById('checkModal')).hide(); load(); }
     else showToast(d.message||'Ошибка','error');
 }
 load();

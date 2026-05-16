@@ -118,18 +118,38 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script>
 async function load() {
     try {
-        const r = await fetch(API_BASE + '?action=get_notifications').then(r=>r.json());
-        const notifs = r.success ? r.data : [];
-        const tb = document.getElementById('notificationsBody');
+        const [n, g] = await Promise.all([
+            fetch(API_BASE + '?action=get_notifications').then(r=>r.json()),
+            fetch(API_BASE + '?action=get_groups').then(r=>r.json())
+        ]);
+        const notifs = n.success ? n.data : [];
+        const groups = g.success ? g.data : [];
+        
+        const ng = document.getElementById('nGroup');
+        ng.innerHTML = '<option value="">Не выбрано</option>' + groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+        
+        const tb = document.getElementById('notifBody');
         if(notifs.length===0) { tb.innerHTML='<tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>'; return; }
         tb.innerHTML = notifs.map(n=>`
             <tr>
-                <td><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></td>
-                <td><span class="badge bg-${n.target_type==='all'?'danger':n.target_type==='teachers'?'info':'success'}">${n.target_type}</span></td>
+                <td><strong>${n.title||'-'}</strong><br><small class="text-muted">${n.message||'-'}</small></td>
+                <td><span class="badge bg-${n.target_type==='all'?'danger':n.target_type==='students'?'success':'info'}">${n.target_type||'-'}</span></td>
                 <td>${n.created_at||'-'}</td>
             </tr>
         `).join('');
     } catch(e) { console.error(e); }
+}
+async function sendNotif() {
+    const fd = new FormData();
+    fd.append('action','add_notification');
+    fd.append('title',document.getElementById('nTitle').value.trim());
+    fd.append('message',document.getElementById('nMsg').value.trim());
+    fd.append('target_type',document.getElementById('nType').value);
+    fd.append('target_group',document.getElementById('nGroup').value);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Уведомление отправлено!','success'); document.getElementById('notifForm').reset(); load(); }
+    else showToast(d.message||'Ошибка','error');
 }
 load();
 </script>

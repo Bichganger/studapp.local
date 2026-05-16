@@ -95,13 +95,14 @@ async function load() {
     try {
         const r = await fetch(API_BASE + '?action=get_notifications').then(r=>r.json());
         const notifs = r.success ? r.data : [];
-        const tb = document.getElementById('notificationsBody');
-        if(notifs.length===0) { tb.innerHTML='<tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>'; return; }
+        const tb = document.getElementById('notifBody');
+        if(notifs.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет уведомлений</td></tr>'; return; }
         tb.innerHTML = notifs.map(n=>`
             <tr>
-                <td><strong>${n.title}</strong><br><small class="text-muted">${n.message}</small></td>
-                <td><span class="badge bg-${n.target_type==='all'?'danger':n.target_type==='teachers'?'info':'success'}">${n.target_type}</span></td>
+                <td><strong>${n.title||'-'}</strong></td>
+                <td><span class="badge bg-${n.target_type==='all'?'danger':n.target_type==='students'?'success':'info'}">${n.target_type||'-'}</span></td>
                 <td>${n.created_at||'-'}</td>
+                <td>${n.message||'-'}</td>
             </tr>
         `).join('');
     } catch(e) { console.error(e); }

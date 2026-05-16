@@ -93,34 +93,16 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script>
 async function load() {
     try {
-        const [s,g] = await Promise.all([
-            fetch(API_BASE + '?action=get_schedule').then(r=>r.json()),
-            fetch(API_BASE + '?action=get_groups').then(r=>r.json())
-        ]);
-        const schedule = s.success ? s.data : [];
-        const groups = g.success ? g.data : [];
-        const today = new Date().toLocaleDateString('ru-RU',{weekday:'long'}).toLowerCase();
-        const todayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===today);
-
-        const tl = document.getElementById('todayList');
-        if(todayClasses.length===0) { tl.innerHTML='<div class="list-group-item text-muted">Сегодня нет занятий</div>'; return; }
-        tl.innerHTML = todayClasses.map(x=>{
+        const r = await fetch(API_BASE + '?action=get_schedule').then(r=>r.json());
+        const schedule = r.success ? r.data : [];
+        
+        const tb = document.getElementById('scheduleBody');
+        if(schedule.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет занятий</td></tr>'; return; }
+        tb.innerHTML = schedule.map(x=>{
             const st=(x.start_time||'').substring(0,5);
             const et=(x.end_time||'').substring(0,5);
-            return `<div class="list-group-item"><strong>${x.subject}</strong><br><small class="text-muted">${st}-${et} | Каб. ${x.classroom}</small></div>`;
+            return `<tr><td class="text-capitalize">${x.day_of_week||'-'}</td><td>${x.subject||'-'}</td><td>${x.teacher_name||'-'}</td><td>${st}-${et}</td><td>${x.classroom||'-'}</td></tr>`;
         }).join('');
-
-        const tb = document.getElementById('weekBody');
-        const days = ['понедельник','вторник','среда','четверг','пятница','суббота'];
-        tb.innerHTML = days.map(d=>{
-            const dayClasses = schedule.filter(x=>x.day_of_week?.toLowerCase()===d);
-            if(dayClasses.length===0) return '';
-            return `<tr><td class="fw-bold text-capitalize">${d}</td><td>`+dayClasses.map(x=>{
-                const st=(x.start_time||'').substring(0,5);
-                const et=(x.end_time||'').substring(0,5);
-                return `<div class="mb-1"><strong>${x.subject}</strong> — ${x.teacher_name}<br><small class="text-muted">${st}-${et} | Каб. ${x.classroom}</small></div>`;
-            }).join('')+`</td></tr>`;
-        }).filter(Boolean).join('');
     } catch(e) { console.error(e); }
 }
 load();

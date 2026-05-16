@@ -82,6 +82,20 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <footer>&copy; 2026 Учеба24</footer>
 
+<div class="modal fade" id="studentsModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="studentsModalTitle">Студенты группы</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>ФИО</th><th>Логин</th><th>Email</th></tr></thead>
+                    <tbody id="studentsBody"><tr><td colspan="3" class="text-center">Загрузка...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div></div>
+</div>
+
 <div class="modal fade" id="groupModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title" id="groupModalTitle">Редактировать группу</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
@@ -128,14 +142,45 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script>
 let groupsData = [];
 const groupModal = new bootstrap.Modal(document.getElementById('groupModal'));
+const studentsModal = new bootstrap.Modal(document.getElementById('studentsModal'));
+
 async function loadGroups() {
     const r = await fetch(API_BASE + '?action=get_groups').then(r=>r.json());
     groupsData = r.success ? r.data : [];
     const tb = document.getElementById('groupsBody');
     if(groupsData.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет групп</td></tr>'; return; }
     tb.innerHTML = groupsData.map(g=>`
-        <tr><td><strong>${g.name}</strong></td><td>${g.specialty}</td><td><span class="badge bg-info">${g.course}</span></td><td><span class="badge bg-success">${g.student_count||0}</span></td>                        <td><button class="btn btn-sm btn-primary me-1" onclick="editGroup(${g.id})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="delGroup(${g.id})"><i class="bi bi-trash"></i></button></td></tr>
+        <tr>
+            <td><strong>${g.name}</strong></td>
+            <td>${g.specialty}</td>
+            <td><span class="badge bg-info">${g.course}</span></td>
+            <td><span class="badge bg-success">${g.student_count||0}</span></td>
+            <td>
+                <button class="btn btn-sm btn-primary me-1" onclick="editGroup(${g.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-success me-1" onclick="viewStudents('${g.name}')"><i class="bi bi-people"></i></button>
+                <button class="btn btn-sm btn-danger" onclick="delGroup(${g.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
     `).join('');
+}
+
+async function viewStudents(groupName) {
+    document.getElementById('studentsModalTitle').textContent = `Студенты группы ${groupName}`;
+    document.getElementById('studentsBody').innerHTML = '<tr><td colspan="3" class="text-center">Загрузка...</td></tr>';
+    studentsModal.show();
+    try {
+        const r = await fetch(API_BASE + '?action=get_users_by_group&group_name=' + encodeURIComponent(groupName)).then(r=>r.json());
+        const studs = r.success ? r.data : [];
+        const tb = document.getElementById('studentsBody');
+        if(studs.length===0) { tb.innerHTML='<tr><td colspan="3" class="text-center text-muted">Нет студентов в группе</td></tr>'; return; }
+        tb.innerHTML = studs.map(s=>`
+            <tr>
+                <td>${s.full_name}</td>
+                <td>${s.username}</td>
+                <td>${s.email||'-'}</td>
+            </tr>
+        `).join('');
+    } catch(e) { console.error(e); }
 }
 async function addGroup() {
     const name = document.getElementById('grpName').value.trim();

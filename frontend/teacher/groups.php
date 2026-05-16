@@ -67,7 +67,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
 
 <div class="modal fade" id="studentsModal" tabindex="-1">
     <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Студенты группы</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-header"><h5 class="modal-title" id="studentsModalTitle">Студенты группы</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body"><ul id="studentsList" class="list-group"></ul></div>
     </div></div>
 </div>
@@ -101,35 +101,32 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script>
 async function load() {
     try {
-        const [g,u] = await Promise.all([
-            fetch(API_BASE + '?action=get_groups').then(r=>r.json()),
-            fetch(API_BASE + '?action=get_users').then(r=>r.json())
-        ]);
+        const g = await fetch(API_BASE + '?action=get_groups').then(r=>r.json());
         const groups = g.success ? g.data : [];
-        const users = u.success ? u.data : [];
         const tb = document.getElementById('groupsBody');
-        if(groups.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет групп</td></tr>'; return; }
-        tb.innerHTML = groups.map(gr=>{
-            const studs = users.filter(u=>u.group_name===gr.name && u.role==='student');
-            return `<tr>
-                <td>${gr.name}</td>
+        if(groups.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет групп</td></tr>'; return; }
+        tb.innerHTML = groups.map(gr=>`
+            <tr>
+                <td><strong>${gr.name}</strong></td>
                 <td>${gr.specialty||'-'}</td>
-                <td>${gr.course||'-'}</td>
-                <td><button class="btn btn-sm btn-info" onclick="viewStudents('${gr.name}')"><i class="bi bi-people"></i> ${studs.length}</button></td>
-            </tr>`;
-        }).join('');
+                <td><span class="badge bg-info">${gr.course||'-'}</span></td>
+                <td><span class="badge bg-success">${gr.student_count||0}</span></td>
+                <td><button class="btn btn-sm btn-info" onclick="viewStudents('${gr.name}')"><i class="bi bi-people"></i> Смотреть</button></td>
+            </tr>`).join('');
     } catch(e) { console.error(e); }
 }
-function viewStudents(group) {
-    fetch(API_BASE + '?action=get_users').then(r=>r.json()).then(d=>{
-        const users = d.success ? d.data : [];
-        const studs = users.filter(u=>u.group_name===group && u.role==='student');
-        const tb = document.getElementById('studentsBody');
-        if(studs.length===0) { tb.innerHTML='<tr><td colspan="2" class="text-center">Нет студентов</td></tr>'; }
-        else { tb.innerHTML = studs.map(s=>`<tr><td>${s.full_name}</td><td>${s.email||'-'}</td></tr>`).join(''); }
-        document.getElementById('studentsModalTitle').textContent = `Студенты группы ${group}`;
-        new bootstrap.Modal(document.getElementById('studentsModal')).show();
-    });
+
+async function viewStudents(group) {
+    document.getElementById('studentsModalTitle').textContent = `Студенты группы ${group}`;
+    document.getElementById('studentsList').innerHTML = '<li class="list-group-item text-center">Загрузка...</li>';
+    new bootstrap.Modal(document.getElementById('studentsModal')).show();
+    try {
+        const r = await fetch(API_BASE + '?action=get_users_by_group&group_name=' + encodeURIComponent(group)).then(r=>r.json());
+        const studs = r.success ? r.data : [];
+        const list = document.getElementById('studentsList');
+        if(studs.length===0) { list.innerHTML='<li class="list-group-item text-center text-muted">Нет студентов</li>'; return; }
+        list.innerHTML = studs.map(s=>`<li class="list-group-item d-flex justify-content-between"><span>${s.full_name}</span><small class="text-muted">${s.username}</small></li>`).join('');
+    } catch(e) { console.error(e); }
 }
 load();
 </script>

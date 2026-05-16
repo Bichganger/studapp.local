@@ -96,14 +96,13 @@ async function load() {
         const r = await fetch(API_BASE + '?action=get_grades').then(r=>r.json());
         const grades = r.success ? r.data : [];
         const tb = document.getElementById('gradesBody');
-        if(grades.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет оценок</td></tr>'; return; }
+        if(grades.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет оценок</td></tr>'; return; }
         tb.innerHTML = grades.map(g=>`
             <tr>
-                <td>${g.subject}</td>
-                <td>${g.grade}</td>
                 <td>${g.date||'-'}</td>
+                <td>${g.subject||'-'}</td>
+                <td><span class="badge bg-${g.grade>=4?'success':g.grade==3?'warning':'danger'}">${g.grade}</span></td>
                 <td>${g.teacher_name||'-'}</td>
-                <td>${g.comment||'-'}</td>
             </tr>
         `).join('');
     } catch(e) { console.error(e); }

@@ -56,8 +56,8 @@ $name = htmlspecialchars($_SESSION['full_name']);
                 <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Отметить посещаемость</div>
                 <div class="card-body">
                     <form id="journalForm">
-                        <div class="mb-2"><label class="form-label">Студент</label><select class="form-select" id="jStudent" required></select></div>
-                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="jGroup" required></select></div>
+                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="jGroup" onchange="onGroupChange()" required></select></div>
+                        <div class="mb-2"><label class="form-label">Студент</label><select class="form-select" id="jStudent" required><option value="">Сначала выберите группу</option></select></div>
                         <div class="mb-2"><label class="form-label">Предмет</label><input type="text" class="form-control" id="jSubject" required></div>
                         <div class="mb-2"><label class="form-label">Дата</label><input type="date" class="form-control" id="jDate" required></div>
                         <div class="mb-2"><label class="form-label">Статус</label>
@@ -127,22 +127,55 @@ async function load() {
         const groups = g.success ? g.data : [];
         const journal = j.success ? j.data : [];
         
-        const gs = document.getElementById('groupSelect');
-        gs.innerHTML = '<option value="">Выберите группу</option>' + groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
+        const jg = document.getElementById('jGroup');
+        jg.innerHTML = '<option value="">Выберите группу</option>' + groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
         
         const tb = document.getElementById('journalBody');
         if(journal.length===0) { tb.innerHTML='<tr><td colspan="5" class="text-center">Нет записей</td></tr>'; return; }
         tb.innerHTML = journal.map(r=>`
             <tr>
-                <td>${r.student_name}</td>
-                <td>${r.subject}</td>
                 <td>${r.date||'-'}</td>
-                <td>${r.grade||'-'}</td>
-                <td>${r.comment||'-'}</td>
+                <td>${r.student_name||'-'}</td>
+                <td>${r.group_name||'-'}</td>
+                <td>${r.subject||'-'}</td>
+                <td>${r.status==='present'?'<span class="badge bg-success">Присутствовал</span>':r.status==='absent'?'<span class="badge bg-danger">Отсутствовал</span>':r.status==='sick'?'<span class="badge bg-warning">Болеет</span>':r.status==='late'?'<span class="badge bg-info">Опоздал</span>':'<span class="badge bg-secondary">-</span>'}</td>
             </tr>
         `).join('');
     } catch(e) { console.error(e); }
 }
+
+async function onGroupChange() {
+    const group = document.getElementById('jGroup').value;
+    const studentSel = document.getElementById('jStudent');
+    if(!group) { studentSel.innerHTML='<option value="">Сначала выберите группу</option>'; return; }
+    studentSel.innerHTML = '<option value="">Выберите студента</option>';
+    try {
+        const r = await fetch(API_BASE + '?action=get_users_by_group&group_name=' + encodeURIComponent(group)).then(r=>r.json());
+        const studs = r.success ? r.data : [];
+        studentSel.innerHTML = '<option value="">Выберите студента</option>' + studs.map(s=>`<option value="${s.full_name}">${s.full_name}</option>`).join('');
+    } catch(e) { console.error(e); }
+}
+
+async function addJournal() {
+    const student = document.getElementById('jStudent').value;
+    const group = document.getElementById('jGroup').value;
+    const subject = document.getElementById('jSubject').value.trim();
+    const date = document.getElementById('jDate').value;
+    const status = document.getElementById('jStatus').value;
+    if(!student||!group||!subject||!date) { showToast('Заполните все поля!','error'); return; }
+    const fd = new FormData();
+    fd.append('action','add_journal');
+    fd.append('student_name',student);
+    fd.append('group_name',group);
+    fd.append('subject',subject);
+    fd.append('date',date);
+    fd.append('status',status);
+    const r = await fetch(API_BASE,{method:'POST',body:fd});
+    const d = await r.json();
+    if(d.success) { showToast('Запись добавлена!','success'); document.getElementById('journalForm').reset(); load(); }
+    else showToast(d.message||'Ошибка','error');
+}
+
 load();
 </script>
 </body>

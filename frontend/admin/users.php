@@ -165,6 +165,7 @@ $name = htmlspecialchars($_SESSION['full_name']);
 <script>
 let usersData = [];
 let groupsData = [];
+let groupsLoaded = false;
 const userModal = new bootstrap.Modal(document.getElementById('userModal'));
 
 async function loadUsers() {
@@ -174,18 +175,22 @@ async function loadUsers() {
         usersData = result.success ? result.data : [];
         renderUsers();
     } catch (error) {
+        console.error('loadUsers error:', error);
         showToast('Ошибка загрузки пользователей', 'error');
     }
 }
 
-async function loadGroups() {
+async function loadGroups(force = false) {
+    if (groupsLoaded && !force) return;
     try {
         const response = await fetch(API_BASE + '?action=get_groups');
         const result = await response.json();
         groupsData = result.success ? result.data : [];
+        groupsLoaded = true;
         populateGroupSelect();
     } catch (error) {
-        console.error('Ошибка загрузки групп:', error);
+        console.error('loadGroups error:', error);
+        groupsData = [];
     }
 }
 
@@ -193,7 +198,10 @@ function populateGroupSelect() {
     const select = document.getElementById('group');
     select.innerHTML = '<option value="">Не указана</option>';
     groupsData.forEach(g => {
-        select.innerHTML += `<option value="${g.name}">${g.name}</option>`;
+        const opt = document.createElement('option');
+        opt.value = g.name;
+        opt.textContent = g.name;
+        select.appendChild(opt);
     });
 }
 
@@ -219,17 +227,21 @@ function renderUsers() {
     `).join('');
 }
 
-function showAddUserModal() {
+async function showAddUserModal() {
     document.getElementById('userForm').reset();
     document.getElementById('userId').value = '';
     document.getElementById('userModalTitle').textContent = 'Добавить пользователя';
+    await loadGroups();
     populateGroupSelect();
     userModal.show();
 }
 
-function editUser(id) {
+async function editUser(id) {
     const user = usersData.find(u => u.id === id);
     if (!user) return;
+    
+    // Гарантированно загрузить группы перед открытием
+    await loadGroups();
     
     document.getElementById('userId').value = user.id;
     document.getElementById('fullName').value = user.full_name;
@@ -267,16 +279,21 @@ async function saveUser() {
             method: 'POST',
             body: formData
         });
-        const result = await response.json();
+        const text = await response.text();
+        console.log('saveUser raw response:', text);
+        let result;
+        try { result = JSON.parse(text); } catch(e) { result = { success: false, error: 'Невалидный JSON: ' + text.substring(0,100) }; }
         
         if (result.success) {
-            showToast(id ? 'Пользователь обновлен!' : 'Пользователь добавлен!', 'success');
+            showToast(id ? 'Пользователь обновлён!' : 'Пользователь добавлен!', 'success');
             userModal.hide();
             loadUsers();
         } else {
-            showToast(result.message || 'Ошибка сохранения', 'error');
+            console.error('saveUser error result:', result);
+            showToast(result.message || result.error || 'Ошибка сохранения', 'error');
         }
     } catch (error) {
+        console.error('saveUser catch:', error);
         showToast('Ошибка соединения', 'error');
     }
 }
@@ -293,15 +310,20 @@ async function deleteUser(id) {
             method: 'POST',
             body: formData
         });
-        const result = await response.json();
+        const text = await response.text();
+        console.log('deleteUser raw response:', text);
+        let result;
+        try { result = JSON.parse(text); } catch(e) { result = { success: false, error: 'Невалидный JSON: ' + text.substring(0,100) }; }
         
         if (result.success) {
-            showToast('Пользователь удален!', 'success');
+            showToast('Пользователь удалён!', 'success');
             loadUsers();
         } else {
-            showToast(result.message || 'Ошибка удаления', 'error');
+            console.error('deleteUser error result:', result);
+            showToast(result.message || result.error || 'Ошибка удаления', 'error');
         }
     } catch (error) {
+        console.error('deleteUser catch:', error);
         showToast('Ошибка соединения', 'error');
     }
 }
@@ -333,6 +355,7 @@ function showToast(message, type) {
     toast.addEventListener('hidden.bs.toast', () => toast.remove());
 }
 
+// Загрузка данных при старте
 loadUsers();
 loadGroups();
 </script>
