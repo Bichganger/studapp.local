@@ -12,11 +12,17 @@
             <div class="col-lg-2 col-md-6">
                 <h6 class="footer-title">Разделы</h6>
                 <ul class="footer-links">
-                    <?php if ($user && in_array($role, ['student', 'admin'])): ?>
+                    <?php if ($user && ($isStudent || $isAdmin)): ?>
                     <li><a href="/student/library.php">Библиотека</a></li>
                     <li><a href="/student/map.php">Карта</a></li>
                     <li><a href="/student/teachers.php">Преподаватели</a></li>
                     <li><a href="/student/tips.php">Советы</a></li>
+                    <?php endif; ?>
+                    
+                    <?php if ($isTeacher): ?>
+                    <li><a href="/teacher/journal.php">Журнал</a></li>
+                    <li><a href="/teacher/grades.php">Оценки</a></li>
+                    <li><a href="/teacher/notifications.php">Рассылка</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -42,10 +48,6 @@
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<?php if ($currentPage === 'map'): ?>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="/assets/js/compass-map.js?v=3"></script>
-<?php endif; ?>
-<script src="/assets/js/compass-main.js?v=3"></script>
+<script src="/assets/js/compass-main.js?v=4"></script>
 </body>
 </html>

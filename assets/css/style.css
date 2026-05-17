@@ -14,8 +14,8 @@
     --accent-purple: #7c4dff;
     --accent-purple-hover: #651fff;
     --text-primary: #f0f2ff;
-    --text-secondary: #a0a8cc;
-    --text-muted: #5a6380;
+    --text-secondary: #e0e4f8;
+    --text-muted: #b8c0e0;
     --border-color: #1e2847;
     --danger: #ff5252;
     --warning: #ffd740;
@@ -1001,6 +1001,116 @@ a:hover {
     border-top: 1px solid var(--border-color);
 }
 
+.modal-title {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    color: var(--text-secondary);
+}
+
+/* === Dashboard Panel Cards === */
+.welcome-card h3,
+.welcome-card h4,
+.welcome-card h5 {
+    color: #0a0e27 !important;
+}
+
+.welcome-card p {
+    color: rgba(10, 14, 39, 0.85) !important;
+}
+
+.stat-card h6 {
+    color: #e0e4f8 !important;
+    font-weight: 600;
+}
+
+.stat-card h2 {
+    color: var(--text-primary) !important;
+}
+
+.card-header {
+    color: var(--text-primary) !important;
+    font-weight: 600;
+}
+
+.card-header i {
+    color: var(--accent) !important;
+}
+
+.card-body {
+    color: var(--text-secondary);
+}
+
+.section-title,
+.section-subtitle {
+    color: var(--text-primary) !important;
+}
+
+/* === Teacher Panel Specific === */
+.teacher-panel .stat-card h6,
+.teacher-panel .stat-card h2 {
+    color: #e0e4f8 !important;
+}
+
+.btn-outline-light {
+    color: #e0e4f8 !important;
+    border-color: #1e2847 !important;
+}
+
+.btn-outline-light:hover {
+    background: var(--accent);
+    color: #0a0e27 !important;
+    border-color: var(--accent) !important;
+}
+
+.empty-state h4 {
+    color: var(--text-primary) !important;
+}
+
+/* === Table Text Fix === */
+.table thead th {
+    color: #f0f2ff !important;
+    font-weight: 600;
+}
+
+.table tbody td {
+    color: #000000 !important;
+}
+
+.table-responsive .table {
+    color: #d0d5f0 !important;
+}
+
+.table th, .table td {
+    color: #d0d5f0 !important;
+}
+
+thead th {
+    color: #f0f2ff !important;
+}
+
+tbody tr td {
+    color: #d0d5f0 !important;
+}
+
+.card-header {
+    color: #f0f2ff !important;
+}
+
+.text-muted {
+    color: #ffffff !important;
+}
+
+/* === Comments === */
+.comment-item {
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+}
+
+
 .btn-close {
     filter: invert(1);
 }
@@ -1305,7 +1415,7 @@ a:hover {
         justify-content: center;
     }
 }
-    
+
 /* === Responsive === */
 @media (max-width: 991.98px) {
     .hero-title {

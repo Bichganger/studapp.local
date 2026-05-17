@@ -1,129 +1,47 @@
 <?php
 session_start();
-require_once '../protected/auth_guard.php';
-if (!in_array($_SESSION['role'], ['admin'])) { header('Location: ../dashboard.php'); exit; }
-$pageTitle = 'Советы по обучению';
+require_once '../config/db.php';
+
+if (($_SESSION['role'] ?? '') !== 'admin') { header('Location: /dashboard.php'); exit; }
+
+$pageTitle = 'Советы';
+$tips = $pdo->query("SELECT t.*, u.full_name as author FROM tips t LEFT JOIN users u ON t.author_id = u.id ORDER BY t.created_at DESC")->fetchAll();
+
+if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
+    $pdo->prepare("DELETE FROM tips WHERE id = ?")->execute([intval($_GET['delete'])]);
+    header('Location: tips.php?deleted=1');
+    exit;
+}
+
 require_once '../includes/header.php';
-$specialties = $pdo->query("SELECT DISTINCT specialty FROM tips ORDER BY specialty")->fetchAll(PDO::FETCH_COLUMN);
-$filterSpecialty = $_GET['specialty'] ?? '';
-if ($filterSpecialty) {
-    $stmt = $pdo->prepare("SELECT t.*, u.name as author_name, (SELECT COUNT(*) FROM tip_likes WHERE tip_id = t.id) as like_count FROM tips t LEFT JOIN users u ON t.user_id = u.id WHERE t.specialty = ? ORDER BY t.likes DESC, t.created_at DESC");
-    $stmt->execute([$filterSpecialty]);
-} else {
-    $stmt = $pdo->query("SELECT t.*, u.name as author_name, (SELECT COUNT(*) FROM tip_likes WHERE tip_id = t.id) as like_count FROM tips t LEFT JOIN users u ON t.user_id = u.id ORDER BY t.likes DESC, t.created_at DESC");
-}
-$tips = $stmt->fetchAll();
-if (isset($_GET['like']) && is_numeric($_GET['like']) && $user) {
-    $tipId = intval($_GET['like']);
-    $stmt = $pdo->prepare("SELECT id FROM tip_likes WHERE tip_id = ? AND user_id = ?");
-    $stmt->execute([$tipId, $_SESSION['user_id']]);
-    if (!$stmt->fetch()) {
-        $pdo->prepare("INSERT INTO tip_likes (tip_id, user_id) VALUES (?, ?)")->execute([$tipId, $_SESSION['user_id']]);
-        $pdo->prepare("UPDATE tips SET likes = likes + 1 WHERE id = ?")->execute([$tipId]);
-    }
-    redirect('tips.php' . ($filterSpecialty ? '?specialty=' . urlencode($filterSpecialty) : ''));
-}
-$tipErrors = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'suggest_tip' && $user) {
-    $specialty = trim($_POST['specialty'] ?? '');
-    $tipText = trim($_POST['tip_text'] ?? '');
-    if (empty($specialty)) $tipErrors[] = 'Укажите специальность';
-    if (empty($tipText) || mb_strlen($tipText) < 20) $tipErrors[] = 'Совет должен содержать минимум 20 символов';
-    if (empty($tipErrors)) {
-        if (hasRole('admin')) {
-            $stmt = $pdo->prepare("INSERT INTO tips (user_id, specialty, tip_text) VALUES (?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $specialty, $tipText]);
-            redirect('tips.php', 'Совет добавлен!', 'success');
-        } else {
-            redirect('tips.php', 'Спасибо! Ваш совет отправлен на модерацию.', 'success');
-        }
-    }
-}
 ?>
-<section class="section">
-    <div class="container">
-        <div class="section-header">
-            <span class="section-label">Лайфхаки</span>
-            <h1 class="section-title">Советы по обучению</h1>
-            <p class="section-subtitle">Проверенные рекомендации от выпускников</p>
-        </div>
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row align-items-center g-3">
-                    <div class="col-lg-8">
-                        <div class="d-flex flex-wrap gap-2">
-                            <a href="tips.php" class="btn btn-sm <?= $filterSpecialty === '' ? 'btn-accent' : 'btn-outline-light' ?>">Все специальности</a>
-                            <?php foreach ($specialties as $spec): ?>
-                            <a href="?specialty=<?= urlencode($spec) ?>" class="btn btn-sm <?= $filterSpecialty === $spec ? 'btn-accent' : 'btn-outline-light' ?>"><?= e($spec) ?></a>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <?php if ($user && hasRole('admin')): ?>
-                        <button class="btn btn-accent btn-sm" data-bs-toggle="modal" data-bs-target="#addTipModal"><i class="bi bi-plus-lg me-1"></i>Добавить совет</button>
-                        <?php elseif ($user): ?>
-                        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#suggestTipModal"><i class="bi bi-lightbulb me-1"></i>Предложить совет</button>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row g-4">
-            <?php foreach ($tips as $tip): ?>
-            <div class="col-lg-6">
-                <div class="tip-card">
-                    <span class="tip-specialty"><?= e($tip['specialty']) ?></span>
-                    <p class="tip-text"><?= nl2br(e($tip['tip_text'])) ?></p>
-                    <div class="tip-footer">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="text-muted small"><i class="bi bi-person me-1"></i><?= e($tip['author_name'] ?? 'Выпускник') ?></span>
-                            <span class="text-muted small"><i class="bi bi-calendar me-1"></i><?= date('d.m.Y', strtotime($tip['created_at'])) ?></span>
-                        </div>
-                        <?php if ($user): ?>
-                        <a href="?like=<?= $tip['id'] ?><?= $filterSpecialty ? '&specialty=' . urlencode($filterSpecialty) : '' ?>" class="btn btn-like"><i class="bi bi-hand-thumbs-up me-1"></i><?= $tip['likes'] + ($tip['like_count'] ?? 0) ?></a>
-                        <?php else: ?>
-                        <span class="text-muted small"><i class="bi bi-hand-thumbs-up me-1"></i><?= $tip['likes'] + ($tip['like_count'] ?? 0) ?></span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
+
+<div class="section"><div class="container">
+    <div class="section-header"><span class="section-label">Администрирование</span><h1 class="section-title">Советы</h1></div>
+    <?php if (isset($_GET['deleted'])): ?><div class="alert alert-info">Совет удалён</div><?php endif; ?>
+
+    <div class="row g-4">
         <?php if (empty($tips)): ?>
-        <div class="empty-state"><i class="bi bi-lightbulb"></i><h4>Советов пока нет</h4><p>Будьте первым!</p></div>
+        <div class="col-12 text-center py-5"><i class="bi bi-lightbulb" style="font-size:3rem;"></i><h4 class="mt-3">Нет советов</h4></div>
+        <?php else: ?>
+        <?php foreach ($tips as $t): ?>
+        <div class="col-lg-6">
+            <div class="card"><div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-accent text-dark"><?= e($t['category']) ?></span>
+                    <a href="?delete=<?= $t['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Удалить?')"><i class="bi bi-trash"></i></a>
+                </div>
+                <h5><?= e($t['title']) ?></h5>
+                <p class="text-muted small"><?= e($t['content']) ?></p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted"><?= e($t['author'] ?? '—') ?> · <?= date('d.m.Y', strtotime($t['created_at'])) ?></small>
+                    <small><i class="bi bi-hand-thumbs-up me-1"></i><?= $t['votes'] ?></small>
+                </div>
+            </div></div>
+        </div>
+        <?php endforeach; ?>
         <?php endif; ?>
     </div>
-</section>
-<?php if ($user && hasRole('admin')): ?>
-<div class="modal fade" id="addTipModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-plus-lg me-2"></i>Добавить совет</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <form method="POST" action="">
-            <div class="modal-body">
-                <input type="hidden" name="action" value="suggest_tip">
-                <div class="mb-3"><label class="form-label">Специальность *</label><input type="text" name="specialty" class="form-control" list="specList" required><datalist id="specList"><?php foreach ($specialties as $s): ?><option value="<?= e($s) ?>"><?php endforeach; ?><option value="Программирование"><option value="Дизайн"><option value="Экономика"><option value="Общие советы"></datalist></div>
-                <div class="mb-3"><label class="form-label">Совет *</label><textarea name="tip_text" class="form-control" rows="5" required placeholder="Поделитесь полезным советом..."></textarea></div>
-            </div>
-            <div class="modal-footer"><button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Отмена</button><button type="submit" class="btn btn-accent">Добавить</button></div>
-        </form>
-    </div></div>
-</div>
-<?php endif; ?>
-<?php if ($user && !hasRole('admin')): ?>
-<div class="modal fade" id="suggestTipModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-lightbulb me-2"></i>Предложить совет</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <form method="POST" action="">
-            <div class="modal-body">
-                <?php if (!empty($tipErrors)): ?><div class="alert alert-danger"><ul class="mb-0"><?php foreach ($tipErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div><?php endif; ?>
-                <input type="hidden" name="action" value="suggest_tip">
-                <div class="mb-3"><label class="form-label">Специальность *</label><input type="text" name="specialty" class="form-control" list="specList2" required><datalist id="specList2"><?php foreach ($specialties as $s): ?><option value="<?= e($s) ?>"><?php endforeach; ?></datalist></div>
-                <div class="mb-3"><label class="form-label">Ваш совет *</label><textarea name="tip_text" class="form-control" rows="5" required placeholder="Расскажите, что помогло вам в учёбе..."></textarea></div>
-                <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i>Совет будет проверен администратором.</p>
-            </div>
-            <div class="modal-footer"><button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Отмена</button><button type="submit" class="btn btn-accent">Отправить</button></div>
-        </form>
-    </div></div>
-</div>
-<?php endif; ?>
+</div></div>
+
 <?php require_once '../includes/footer.php'; ?>

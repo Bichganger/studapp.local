@@ -1,0 +1,101 @@
+/**
+ * Студенческий компас — Яндекс.Карты
+ */
+ymaps.ready(init);
+
+function init() {
+    const data = window.mapData || { locations: [], campuses: [], categories: {} };
+    
+    const map = new ymaps.Map('map', {
+        center: [54.7150, 20.4885],
+        zoom: 15,
+        controls: ['zoomControl', 'fullscreenControl']
+    });
+
+    // Стили меток
+    const campusIcon = {
+        layout: 'default#simpleIcon',
+        iconColor: '#7c4dff'
+    };
+
+    const poiIcons = {
+        'building': { iconColor: '#7c4dff' },
+        'cafeteria': { iconColor: '#ff5252' },
+        'bus_stop': { iconColor: '#40c4ff' },
+        'other': { iconColor: '#e040fb' }
+    };
+
+    const placemarks = [];
+
+    // Корпуса
+    data.campuses.forEach(c => {
+        const placemark = new ymaps.Placemark([c.lat, c.lng], {
+            balloonContentHeader: `<strong style="color:${c.color}">${c.name}</strong>`,
+            balloonContentBody: `<p style="color:#e0e4ff">${c.address}</p>`
+        }, {
+            preset: 'islands#circleIcon',
+            iconColor: c.color.replace('#', '')
+        });
+        placemarks.push(placemark);
+    });
+
+    // POI
+    data.locations.forEach(loc => {
+        const cat = data.categories[loc.type];
+        if (!cat) return;
+        
+        const content = `<strong style="color:${cat.color}">${loc.name}</strong><br/>
+            <span style="color:#a0a8cc">${loc.address}</span><br/>
+            ${loc.hours ? `<span style="color:#5a6380">${loc.hours}</span>` : ''}`;
+
+        const placemark = new ymaps.Placemark([loc.lat, loc.lng], {
+            balloonContentBody: content
+        }, {
+            preset: `islands#${cat.icon.replace('bi-', '')}Icon`,
+            iconColor: cat.color.replace('#', '')
+        });
+        placemarks.push(placemark);
+    });
+
+    map.geoObjects.add(placemarks);
+
+    // Фильтрация
+    const activePlacemarks = [...placemarks];
+    
+    document.querySelectorAll('.category-toggle').forEach(tog => {
+        tog.addEventListener('change', function() {
+            const type = this.value;
+            const checked = this.checked;
+            
+            placemarks.forEach(p => {
+                const coords = p.geometry.getCoordinates();
+                const isCampus = data.campuses.some(c => c.lat === coords[0] && c.lng === coords[1]);
+                const isPOI = data.locations.some(l => l.lat === coords[0] && l.lng === coords[1] && l.type === type);
+                
+                if (isCampus && checked) {
+                    if (!map.geoObjects.contains(p)) map.geoObjects.add(p);
+                } else if (isPOI) {
+                    if (checked && !map.geoObjects.contains(p)) {
+                        map.geoObjects.add(p);
+                    } else if (!checked && map.geoObjects.contains(p)) {
+                        map.geoObjects.remove(p);
+                    }
+                }
+            });
+        });
+    });
+
+    // Переход к корпусу
+    document.querySelectorAll('.fly-to-campus').forEach(btn => {
+        btn.addEventListener('click', function() {
+            map.setCenter([parseFloat(this.dataset.lat), parseFloat(this.dataset.lng)], 17, {
+                duration: 300
+            });
+        });
+    });
+
+    // Сброс
+    document.getElementById('resetMap').addEventListener('click', () => {
+        map.setCenter([54.7150, 20.4885], 15, { duration: 300 });
+    });
+}

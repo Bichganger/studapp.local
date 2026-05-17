@@ -1,157 +1,78 @@
 <?php
 session_start();
-require_once '../protected/auth_guard.php';
-if ($_SESSION['role'] !== 'teacher') { header('Location: ../dashboard.php'); exit; }
-$name = htmlspecialchars($_SESSION['full_name']);
+require_once '../config/db.php';
+
+if (($_SESSION['role'] ?? '') !== 'teacher') { header('Location: /dashboard.php'); exit; }
+
+$pageTitle = 'Рассылка уведомлений';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'send') {
+    $title = trim($_POST['title'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+    $targetGroup = trim($_POST['target_group'] ?? '');
+    
+    if (!empty($title) && !empty($message)) {
+        $stmt = $pdo->prepare("INSERT INTO notifications (title, message, target_type, target_group, sender_id) VALUES (?, ?, 'students', ?, ?)");
+        $stmt->execute([$title, $message, $targetGroup ?: null, $_SESSION['user_id']]);
+        header('Location: notifications.php?success=1');
+        exit;
+    }
+    header('Location: notifications.php?error=1');
+    exit;
+}
+
+$groups = $pdo->query("SELECT DISTINCT group_name FROM users WHERE role='student' AND group_name IS NOT NULL AND group_name != '' ORDER BY group_name")->fetchAll(PDO::FETCH_COLUMN);
+$notifications = $pdo->query("SELECT * FROM notifications WHERE target_type IN ('all', 'students') ORDER BY created_at DESC LIMIT 30")->fetchAll();
+
+require_once '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Рассылка — Учеба24</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        .sidebar-header { border-bottom-color: var(--info); }
-        .sidebar-header small { color: var(--info); }
-        .sidebar a:hover, .sidebar a.active { background: linear-gradient(90deg, #0dcaf0 0%, #0bb5d6 100%); }
-        .welcome-card { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
-        .card-header { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
-        .table thead th { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); color: white; }
-        .btn-info { background: linear-gradient(135deg, #0dcaf0 0%, #0bb5d6 100%); border: none; color: #fff; }
-    </style>
-</head>
-<body class="role-teacher">
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h5><i class="bi bi-person-badge"></i> Учеба24</h5>
-        <small>Кабинет преподавателя</small>
-    </div>
-    <nav class="mt-3">
-        <a href="panel.php"><i class="bi bi-house me-2"></i>Главная</a>
-        <a href="journal.php"><i class="bi bi-journal-text me-2"></i>Журнал</a>
-        <a href="grades.php"><i class="bi bi-star me-2"></i>Оценки</a>
-        <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Работы</a>
-        <a href="groups.php"><i class="bi bi-people me-2"></i>Группы</a>
-        <a href="schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a>
-        <a href="notifications.php" class="active"><i class="bi bi-bell me-2"></i>Рассылка</a>
-        <hr>
-        <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal"><i class="bi bi-universal-access me-2"></i>Доступность</a>
-        <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
-    </nav>
-</div>
+<div class="section"><div class="container">
+    <div class="section-header"><span class="section-label">Преподавание</span><h1 class="section-title">Рассылка уведомлений</h1></div>
 
-<main class="main-content">
-    <div class="p-4 welcome-card">
-        <h3><i class="bi bi-bell"></i> Рассылка уведомлений</h3>
-        <p class="mb-0">Отправка уведомлений студентам и группам</p>
-    </div>
+    <?php if (isset($_GET['success'])): ?><div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Уведомление отправлено!</div><?php endif; ?>
+    <?php if (isset($_GET['error'])): ?><div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Заполните все поля</div><?php endif; ?>
 
     <div class="row g-3">
         <div class="col-md-4">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-plus-circle me-2"></i>Создать уведомление</div>
+            <div class="card"><div class="card-header"><i class="bi bi-plus-circle me-2"></i>Создать</div>
                 <div class="card-body">
-                    <form id="notifForm">
-                        <div class="mb-2"><label class="form-label">Заголовок</label><input type="text" class="form-control" id="nTitle" required></div>
-                        <div class="mb-2"><label class="form-label">Сообщение</label><textarea class="form-control" id="nMsg" rows="3" required></textarea></div>
-                        <div class="mb-2"><label class="form-label">Кому</label>
-                            <select class="form-select" id="nType">
-                                <option value="all">Всем</option>
-                                <option value="students">Студентам</option>
-                                <option value="group">Группе</option>
+                    <form method="POST">
+                        <input type="hidden" name="action" value="send">
+                        <div class="mb-2"><label class="form-label">Заголовок</label><input type="text" name="title" class="form-control" required></div>
+                        <div class="mb-2"><label class="form-label">Сообщение</label><textarea name="message" class="form-control" rows="3" required></textarea></div>
+                        <div class="mb-2"><label class="form-label">Группа</label>
+                            <select name="target_group" class="form-select">
+                                <option value="">Всем студентам</option>
+                                <?php foreach ($groups as $g): ?><option value="<?= e($g) ?>"><?= e($g) ?></option><?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="mb-2"><label class="form-label">Группа</label><select class="form-select" id="nGroup"><option value="">Не выбрано</option></select></div>
-                        <button type="button" class="btn btn-info w-100" onclick="sendNotif()">Отправить</button>
+                        <button type="submit" class="btn btn-accent w-100">Отправить</button>
                     </form>
                 </div>
             </div>
         </div>
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-list-ul me-2"></i>История уведомлений</div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead><tr><th>Заголовок</th><th>Кому</th><th>Дата</th></tr></thead>
-                            <tbody id="notifBody"><tr><td colspan="3" class="text-center">Загрузка...</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="card"><div class="card-header"><i class="bi bi-list-ul me-2"></i>История</div>
+                <div class="card-body p-0"><div class="table-responsive"><table class="table mb-0">
+                    <thead><tr><th>Заголовок</th><th>Кому</th><th>Дата</th></tr></thead>
+                    <tbody>
+                        <?php if (empty($notifications)): ?>
+                        <tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>
+                        <?php else: ?>
+                        <?php foreach ($notifications as $n): ?>
+                        <tr>
+                            <td><strong><?= e($n['title']) ?></strong><br><small class="text-muted"><?= e(mb_substr($n['message'], 0, 80)) ?></small></td>
+                            <td><?= $n['target_group'] ? e($n['target_group']) : ($n['target_type'] === 'all' ? 'Всем' : 'Студентам') ?></td>
+                            <td><?= date('d.m.Y H:i', strtotime($n['created_at'])) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table></div></div>
             </div>
         </div>
     </div>
-</main>
+</div></div>
 
-<footer>&copy; 2026 Учеба24</footer>
-
-<div class="modal fade" id="accessibilityModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <h6>Размер текста</h6>
-            <div class="btn-group w-100 mb-3">
-                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="100">100%</button>
-                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="125">125%</button>
-                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="150">150%</button>
-                <button class="btn btn-outline-info" data-a11y="fontSize" data-value="200">200%</button>
-            </div>
-            <h6>Визуальный режим</h6>
-            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
-            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
-            <button type="button" class="btn btn-info" onclick="saveAccessibility()">Сохранить</button>
-        </div>
-    </div></div>
-</div>
-
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/api-config.js"></script>
-<script src="../assets/js/accessibility.js"></script>
-<script>
-async function load() {
-    try {
-        const [n, g] = await Promise.all([
-            fetch(API_BASE + '?action=get_notifications').then(r=>r.json()),
-            fetch(API_BASE + '?action=get_groups').then(r=>r.json())
-        ]);
-        const notifs = n.success ? n.data : [];
-        const groups = g.success ? g.data : [];
-        
-        const ng = document.getElementById('nGroup');
-        ng.innerHTML = '<option value="">Не выбрано</option>' + groups.map(gr=>`<option value="${gr.name}">${gr.name}</option>`).join('');
-        
-        const tb = document.getElementById('notifBody');
-        if(notifs.length===0) { tb.innerHTML='<tr><td colspan="3" class="text-center">Нет уведомлений</td></tr>'; return; }
-        tb.innerHTML = notifs.map(n=>`
-            <tr>
-                <td><strong>${n.title||'-'}</strong><br><small class="text-muted">${n.message||'-'}</small></td>
-                <td><span class="badge bg-${n.target_type==='all'?'danger':n.target_type==='students'?'success':'info'}">${n.target_type||'-'}</span></td>
-                <td>${n.created_at||'-'}</td>
-            </tr>
-        `).join('');
-    } catch(e) { console.error(e); }
-}
-async function sendNotif() {
-    const fd = new FormData();
-    fd.append('action','add_notification');
-    fd.append('title',document.getElementById('nTitle').value.trim());
-    fd.append('message',document.getElementById('nMsg').value.trim());
-    fd.append('target_type',document.getElementById('nType').value);
-    fd.append('target_group',document.getElementById('nGroup').value);
-    const r = await fetch(API_BASE,{method:'POST',body:fd});
-    const d = await r.json();
-    if(d.success) { showToast('Уведомление отправлено!','success'); document.getElementById('notifForm').reset(); load(); }
-    else showToast(d.message||'Ошибка','error');
-}
-load();
-</script>
-</body>
-</html>
+<?php require_once '../includes/footer.php'; ?>

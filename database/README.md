@@ -1,39 +1,37 @@
-# Настройка базы данных
+# База данных StudApp
 
-## 1. Создайте базу данных
-
-```sql
-CREATE DATABASE studapp_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-## 2. Выполните скрипты в порядке
+## Импорт
 
 ```bash
-mysql -u root -p studapp_db < 01_create_users_table.sql
-mysql -u root -p studapp_db < 02_create_groups_table.sql
-mysql -u root -p studapp_db < 03_create_assignments_table.sql
-mysql -u root -p studapp_db < 04_create_students_table.sql
+mysql -u root -p < full_database.sql
 ```
 
-## 3. Добавьте тестового администратора
+## Структура таблиц
 
-```sql
-INSERT INTO users (username, password, role, full_name) VALUES
-('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'Администратор');
--- Пароль: password
-```
+| Таблица | Описание |
+|---------|----------|
+| **users** | Пользователи (студенты, преподаватели, админы) |
+| **groups** | Учебные группы |
+| **schedule** | Расписание занятий |
+| **grades** | Оценки студентов |
+| **assignments** | Студенческие работы |
+| **journal** | Посещаемость |
+| **notifications** | Уведомления |
+| **library** | Библиотека материалов |
+| **tips** | Советы выпускников |
 
-## 4. Добавьте тестовых студентов
+## Тестовые данные
 
-Таблица `students` уже заполнена тестовыми данными в скрипте 04_create_students_table.sql
+Файл `full_database.sql` содержит:
+- 1 администратора (admin / admin123)
+- 2 преподавателей (teacher1/2 / teacher123)
+- 9 студентов (student1-9 / student123)
+- 14 учебных групп
+- Расписание, оценки, работы, уведомления
 
-Тестовые студенты:
-- Иванов Иван Петрович, группа ИТ-321, 3 курс
-- Петров Петр Сергеевич, группа ИТ-321, 3 курс
-- Сидорова Анна Ивановна, группа ИТ-321, 3 курс
-- Козлов Дмитрий Алексеевич, группа ИТ-312, 3 курс
-- Смирнова Мария Владимировна, группа ИТ-312, 3 курс
+## Пароли
 
-## 5. Проверьте работу
-
-Попробуйте зарегистрировать одного из тестовых студентов через форму регистрации.
+Все пароли хешированы через `password_hash()`:
+- `admin123` — администратор
+- `teacher123` — преподаватели
+- `student123` — студенты

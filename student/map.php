@@ -1,25 +1,61 @@
 <?php
 session_start();
+require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
-if (!in_array($_SESSION['role'], ['student', 'admin'])) { header('Location: ../dashboard.php'); exit; }
-$pageTitle = 'Карта Калининграда';
+
+$pageTitle = 'Карта корпусов';
 require_once '../includes/header.php';
-$locations = $pdo->query("SELECT * FROM locations ORDER BY category, name")->fetchAll();
+
+// Категории мест
 $categories = [
-    'eat' => ['name' => 'Где поесть', 'icon' => 'bi-cup-hot', 'color' => '#ff5252'],
-    'stationery' => ['name' => 'Канцтовары', 'icon' => 'bi-pencil', 'color' => '#7c4dff'],
-    'smoking' => ['name' => 'Места для курения', 'icon' => 'bi-wind', 'color' => '#5a6380'],
-    'gift' => ['name' => 'Подарки', 'icon' => 'bi-gift', 'color' => '#e040fb'],
-    'transport' => ['name' => 'Транспорт', 'icon' => 'bi-bus-front', 'color' => '#40c4ff'],
+    'building'  => ['name' => 'Корпуса',       'icon' => 'bi-building',     'color' => '#7c4dff'],
+    'cafeteria' => ['name' => 'Где поесть',    'icon' => 'bi-cup-hot',      'color' => '#ff5252'],
+    'bus_stop'  => ['name' => 'Транспорт',     'icon' => 'bi-bus-front',    'color' => '#40c4ff'],
+    'other'     => ['name' => 'Прочее',        'icon' => 'bi-geo-alt',      'color' => '#e040fb'],
 ];
+
+// Три реальных корпуса в Калининграде
 $campuses = [
-    ['name' => 'Брамса 9', 'lat' => 54.7105, 'lng' => 20.5155, 'color' => '#7c4dff'],
-    ['name' => 'Спортивная 6', 'lat' => 54.7055, 'lng' => 20.5080, 'color' => '#00e676'],
-    ['name' => 'Озерова 7', 'lat' => 54.7020, 'lng' => 20.5200, 'color' => '#40c4ff'],
+    ['name' => 'Брамса 9', 'address' => 'ул. Иоганна Себастьяна Баха, 9', 'lat' => 54.7148, 'lng' => 20.4912, 'color' => '#7c4dff'],
+    ['name' => 'Спортивная 6', 'address' => 'ул. Спортивная, 6', 'lat' => 54.7125, 'lng' => 20.4860, 'color' => '#00e676'],
+    ['name' => 'Озерова 7', 'address' => 'ул. Озерова, 7', 'lat' => 54.7180, 'lng' => 20.4885, 'color' => '#40c4ff'],
 ];
+
+// Дополнительные POI вокруг корпусов
+$locations = [
+    ['name' => 'Столовая «Сытно»', 'lat' => 54.7152, 'lng' => 20.4905, 'type' => 'cafeteria', 'address' => 'ул. Баха, 7', 'hours' => '09:00–17:00'],
+    ['name' => 'Остановка «Ул. Баха»', 'lat' => 54.7150, 'lng' => 20.4900, 'type' => 'bus_stop', 'address' => 'ул. Баха', 'hours' => ''],
+    ['name' => 'Кофейня «Bean&Grain»', 'lat' => 54.7140, 'lng' => 20.4925, 'type' => 'cafeteria', 'address' => 'ул. Баха, 12', 'hours' => '08:00–21:00'],
+    ['name' => 'Столовая колледжа', 'lat' => 54.7120, 'lng' => 20.4870, 'type' => 'cafeteria', 'address' => 'ул. Спортивная, 6', 'hours' => '09:00–16:00'],
+    ['name' => 'Остановка «Спортивная»', 'lat' => 54.7130, 'lng' => 20.4875, 'type' => 'bus_stop', 'address' => 'ул. Спортивная', 'hours' => ''],
+    ['name' => 'Канцтовары «Тетрадка»', 'lat' => 54.7115, 'lng' => 20.4850, 'type' => 'other', 'address' => 'ул. Спортивная, 2', 'hours' => '10:00–20:00'],
+    ['name' => 'Бургерная «GrillHouse»', 'lat' => 54.7185, 'lng' => 20.4875, 'type' => 'cafeteria', 'address' => 'ул. Озерова, 5', 'hours' => '11:00–23:00'],
+    ['name' => 'Остановка «Ул. Озерова»', 'lat' => 54.7175, 'lng' => 20.4890, 'type' => 'bus_stop', 'address' => 'ул. Озерова', 'hours' => ''],
+    ['name' => 'Магазин «Продукты 24»', 'lat' => 54.7190, 'lng' => 20.4895, 'type' => 'other', 'address' => 'ул. Озерова, 10', 'hours' => 'Круглосуточно'],
+];
+
 $locationsJson = json_encode($locations, JSON_UNESCAPED_UNICODE);
-$campusesJson = json_encode($campuses, JSON_UNESCAPED_UNICODE);
+$campusesJson  = json_encode($campuses, JSON_UNESCAPED_UNICODE);
+$categoriesJson = json_encode($categories, JSON_UNESCAPED_UNICODE);
 ?>
+
+<style>
+#map {
+    height: 65vh;
+    min-height: 450px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    margin-top: 16px;
+}
+.map-controls {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+}
+</style>
+
 <section class="section">
     <div class="container">
         <div class="section-header">
@@ -27,17 +63,18 @@ $campusesJson = json_encode($campuses, JSON_UNESCAPED_UNICODE);
             <h1 class="section-title">Карта жизни студента</h1>
             <p class="section-subtitle">Всё важное рядом с корпусами — найди за 30 секунд</p>
         </div>
+
         <div class="map-controls">
             <div class="row align-items-center g-3">
                 <div class="col-lg-6">
-                    <h6 class="mb-2"><i class="bi bi-layers me-2"></i>Категории</h6>
+                    <h6 class="mb-2" style="color: var(--text-primary);"><i class="bi bi-layers me-2"></i>Категории</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <?php foreach ($categories as $key => $cat): ?>
                         <div class="form-check map-legend-item">
                             <input class="form-check-input category-toggle" type="checkbox" value="<?= e($key) ?>" id="cat_<?= e($key) ?>" checked>
-                            <label class="form-check-label d-flex align-items-center gap-2" for="cat_<?= e($key) ?>">
-                                <span class="map-legend-color" style="background: <?= $cat['color'] ?>"></span>
-                                <i class="bi <?= $cat['icon'] ?>" style="color: <?= $cat['color'] ?>"></i>
+                            <label class="form-check-label d-flex align-items-center gap-2" for="cat_<?= e($key) ?>" style="color: var(--text-primary);">
+                                <span class="map-legend-color" style="background:<?= $cat['color'] ?>;width:12px;height:12px;border-radius:50%;display:inline-block;"></span>
+                                <i class="bi <?= $cat['icon'] ?>" style="color:<?= $cat['color'] ?>"></i>
                                 <?= e($cat['name']) ?>
                             </label>
                         </div>
@@ -45,22 +82,33 @@ $campusesJson = json_encode($campuses, JSON_UNESCAPED_UNICODE);
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <h6 class="mb-2"><i class="bi bi-buildings me-2"></i>Корпуса</h6>
+                    <h6 class="mb-2" style="color: var(--text-primary);"><i class="bi bi-buildings me-2"></i>Корпуса</h6>
                     <div class="d-flex flex-wrap gap-2">
-                        <?php foreach ($campuses as $i => $campus): ?>
-                        <button class="btn btn-sm btn-outline-light fly-to-campus" data-lat="<?= $campus['lat'] ?>" data-lng="<?= $campus['lng'] ?>" style="border-color: <?= $campus['color'] ?>; color: <?= $campus['color'] ?>">
+                        <?php foreach ($campuses as $campus): ?>
+                        <button class="btn btn-sm btn-outline-light fly-to-campus"
+                                data-lat="<?= $campus['lat'] ?>" data-lng="<?= $campus['lng'] ?>"
+                                style="border-color:<?= $campus['color'] ?>; color:<?= $campus['color'] ?>">
                             <i class="bi bi-geo-alt-fill me-1"></i><?= e($campus['name']) ?>
                         </button>
                         <?php endforeach; ?>
-                        <button class="btn btn-sm btn-accent" id="resetMap"><i class="bi bi-arrows-fullscreen me-1"></i>Весь Калининград</button>
+                        <button class="btn btn-sm btn-accent" id="resetMap">
+                            <i class="bi bi-arrows-fullscreen me-1"></i>Весь Калининград
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-        <div id="map" class="map-container"></div>
+        <div id="map"></div>
     </div>
 </section>
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=&lang=ru_RU"></script>
 <script>
-window.mapData = { locations: <?= $locationsJson ?>, campuses: <?= $campusesJson ?>, categories: <?= json_encode($categories, JSON_UNESCAPED_UNICODE) ?> };
+window.mapData = {
+    locations: <?= $locationsJson ?>,
+    campuses: <?= $campusesJson ?>,
+    categories: <?= $categoriesJson ?>
+};
 </script>
+<script src="/assets/js/yandex-map.js"></script>
 <?php require_once '../includes/footer.php'; ?>

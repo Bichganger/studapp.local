@@ -1,4 +1,97 @@
-# Файлы для удаления:
-# NAVIGATION.md, NEURAL_DESIGN.md, STRUCTURE.md
-# admin/README.md, database/README.md
-# database/04_create_students_table.sql
+# StudApp - Студенческий компас
+
+## 📁 Структура проекта
+
+```
+studapp.local/
+├── admin/              # Админ-панель
+│   ├── dashboard.php
+│   ├── users.php
+│   ├── groups.php
+│   ├── teachers.php
+│   ├── schedule.php
+│   ├── library.php
+│   ├── notifications.php
+│   ├── tips.php
+│   ├── map.php
+│   └── settings.php
+│
+├── student/            # Кабинет студента
+│   ├── panel.php
+│   ├── schedule.php
+│   ├── grades.php
+│   ├── assignments.php
+│   ├── library.php
+│   ├── map.php
+│   ├── teachers.php
+│   ├── tips.php
+│   └── notifications.php
+│
+├── teacher/            # Кабинет преподавателя
+│   ├── panel.php
+│   ├── journal.php
+│   ├── grades.php
+│   ├── assignments.php
+│   ├── groups.php
+│   ├── schedule.php
+│   └── notifications.php
+│
+├── config/
+│   └── db.php          # БД + функции
+│
+├── protected/
+│   └── auth_guard.php  # Авторизация
+│
+├── includes/
+│   ├── header.php
+│   └── footer.php
+│
+├── assets/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── compass-main.js
+│       ├── compass-map.js
+│       └── yandex-map.js
+│
+├── database/
+│   ├── full_database.sql
+│   └── README.md
+│
+├── uploads/works/      # Файлы студентов
+├── docs/               # Документация
+│
+├── index.php           # Главная
+├── dashboard.php       # Вход
+├── auth.php            # Обработка входа
+├── register_new.php    # Регистрация
+├── reg_process.php     # Обработка регистрации
+├── logout.php          # Выход
+│
+├── README.md
+├── PROJECT_STRUCTURE.md
+└── .gitignore
+```
+
+## 🚀 Установка
+
+1. Разместите в `C:/OSPanel/domains/studapp.local`
+2. Создайте БД `studapp`, импортируйте `database/full_database.sql`
+3. Настройте `config/db.php`
+4. Откройте `http://studapp.local`
+
+## 🔑 Тестовые учётные данные
+
+| Роль | Логин | Пароль |
+|------|-------|--------|
+| Admin | admin | admin123 |
+| Teacher | teacher1 | teacher123 |
+| Student | student1 | student123 |
+
+## 🗑️ Удалённые файлы
+
+- `frontend/` — старый дубликат
+- `public/` — неиспользуемый
+- `style/` — неиспользуемый
+- `api/` — неиспользуемый
+- `assets/js/api-config.js` — неиспользуемый

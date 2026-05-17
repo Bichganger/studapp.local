@@ -1,113 +1,53 @@
 <?php
 session_start();
+require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
+
 if ($_SESSION['role'] !== 'student') { header('Location: ../dashboard.php'); exit; }
-$name = htmlspecialchars($_SESSION['full_name']);
+
+$pageTitle = 'Оценки';
+$userId = $_SESSION['user_id'];
+
+$stmt = $pdo->prepare("SELECT g.*, u.full_name as teacher_name FROM grades g LEFT JOIN users u ON g.teacher_id = u.id WHERE g.student_id = ? ORDER BY g.created_at DESC");
+$stmt->execute([$userId]);
+$grades = $stmt->fetchAll();
+
+require_once '../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Оценки — Учеба24</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        .sidebar-header { border-bottom-color: var(--accent); }
-        .sidebar-header small { color: var(--accent); }
-        .sidebar a:hover, .sidebar a.active { background: linear-gradient(90deg, #198754 0%, #146c43 100%); }
-        .welcome-card { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; }
-        .card-header { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; }
-        .table thead th { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; }
-        .btn-success { background: linear-gradient(135deg, #198754 0%, #146c43 100%); border: none; }
-    </style>
-</head>
-<body class="role-student">
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h5><i class="bi bi-mortarboard"></i> Учеба24</h5>
-        <small>Кабинет студента</small>
+<div class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Успеваемость</span>
+            <h1 class="section-title">Мои оценки</h1>
+        </div>
+
+        <?php if (empty($grades)): ?>
+            <div class="empty-state text-center py-5"><i class="bi bi-star" style="font-size:3rem;"></i><h4 class="mt-3">Нет оценок</h4><p class="text-muted">Оценки пока не выставлены</p></div>
+        <?php else: ?>
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead><tr><th>Дата</th><th>Предмет</th><th>Оценка</th><th>Комментарий</th><th>Преподаватель</th></tr></thead>
+                            <tbody>
+                                <?php foreach ($grades as $g): ?>
+                                <?php $bc = $g['grade'] >= 4 ? 'bg-success' : ($g['grade'] == 3 ? 'bg-warning' : 'bg-danger'); ?>
+                                <tr>
+                                    <td><?= date('d.m.Y', strtotime($g['created_at'])) ?></td>
+                                    <td><?= e($g['subject']) ?></td>
+                                    <td><span class="badge <?= $bc ?>"><?= $g['grade'] ?></span></td>
+                                    <td class="text-muted small"><?= e($g['comment'] ?? '—') ?></td>
+                                    <td><?= e($g['teacher_name'] ?? '—') ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
-    <nav class="mt-3">
-        <a href="panel.php"><i class="bi bi-house me-2"></i>Главная</a>
-        <a href="schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a>
-        <a href="grades.php" class="active"><i class="bi bi-star me-2"></i>Оценки</a>
-        <a href="assignments.php"><i class="bi bi-file-text me-2"></i>Мои работы</a>
-        <a href="library.php"><i class="bi bi-journal me-2"></i>Библиотека</a>
-        <a href="notifications.php"><i class="bi bi-bell me-2"></i>Уведомления</a>
-        <hr>
-        <a href="#" data-bs-toggle="modal" data-bs-target="#accessibilityModal"><i class="bi bi-universal-access me-2"></i>Доступность</a>
-        <a href="../logout.php" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Выход</a>
-    </nav>
 </div>
 
-<main class="main-content">
-    <div class="p-4 welcome-card">
-        <h3><i class="bi bi-star"></i> Мои оценки</h3>
-        <p class="mb-0">Просмотр выставленных оценок</p>
-    </div>
-
-    <div class="card">
-        <div class="card-header"><i class="bi bi-list-ul me-2"></i>Журнал оценок</div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead><tr><th>Дата</th><th>Предмет</th><th>Оценка</th><th>Преподаватель</th></tr></thead>
-                    <tbody id="gradesBody"><tr><td colspan="4" class="text-center">Загрузка...</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</main>
-
-<footer>&copy; 2026 Учеба24</footer>
-
-<div class="modal fade" id="accessibilityModal" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-universal-access"></i> Доступность</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <h6>Размер текста</h6>
-            <div class="btn-group w-100 mb-3">
-                <button class="btn btn-outline-success" data-a11y="fontSize" data-value="100">100%</button>
-                <button class="btn btn-outline-success" data-a11y="fontSize" data-value="125">125%</button>
-                <button class="btn btn-outline-success" data-a11y="fontSize" data-value="150">150%</button>
-                <button class="btn btn-outline-success" data-a11y="fontSize" data-value="200">200%</button>
-            </div>
-            <h6>Визуальный режим</h6>
-            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="highContrast" id="highContrast"><label class="form-check-label" for="highContrast">Высокая контрастность</label></div>
-            <div class="form-check mb-2"><input class="form-check-input" type="checkbox" data-a11y="largeButtons" id="largeButtons"><label class="form-check-label" for="largeButtons">Увеличенные кнопки</label></div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Назад</button>
-            <button type="button" class="btn btn-success" onclick="saveAccessibility()">Сохранить</button>
-        </div>
-    </div></div>
-</div>
-
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999"></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../assets/js/api-config.js"></script>
-<script src="../assets/js/accessibility.js"></script>
-<script>
-async function load() {
-    try {
-        const r = await fetch(API_BASE + '?action=get_grades').then(r=>r.json());
-        const grades = r.success ? r.data : [];
-        const tb = document.getElementById('gradesBody');
-        if(grades.length===0) { tb.innerHTML='<tr><td colspan="4" class="text-center">Нет оценок</td></tr>'; return; }
-        tb.innerHTML = grades.map(g=>`
-            <tr>
-                <td>${g.date||'-'}</td>
-                <td>${g.subject||'-'}</td>
-                <td><span class="badge bg-${g.grade>=4?'success':g.grade==3?'warning':'danger'}">${g.grade}</span></td>
-                <td>${g.teacher_name||'-'}</td>
-            </tr>
-        `).join('');
-    } catch(e) { console.error(e); }
-}
-load();
-</script>
-</body>
-</html>
+<?php require_once '../includes/footer.php'; ?>
