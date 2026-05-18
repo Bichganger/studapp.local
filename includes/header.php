@@ -86,7 +86,7 @@ $isTeacher = $role === 'teacher';
                         <li><a class="dropdown-item text-warning" href="/admin/dashboard.php"><i class="bi bi-shield-lock me-2"></i>Админ-панель</a></li>
                         <li><a class="dropdown-item" href="/admin/users.php"><i class="bi bi-people me-2"></i>Пользователи</a></li>
                         <li><a class="dropdown-item" href="/admin/groups.php"><i class="bi bi-people-fill me-2"></i>Группы</a></li>
-                        <li><a class="dropdown-item" href="/admin/teachers.php"><i class="bi bi-person-badge me-2"></i>Преподаватели</a></li>
+                        <li><a class="dropdown-item" href="/admin/manage_teachers.php"><i class="bi bi-person-badge me-2"></i>Преподаватели</a></li>
                         <li><a class="dropdown-item" href="/admin/schedule.php"><i class="bi bi-calendar me-2"></i>Расписание</a></li>
                         <li><a class="dropdown-item" href="/admin/library.php"><i class="bi bi-journal me-2"></i>Библиотека</a></li>
                         <li><a class="dropdown-item" href="/admin/notifications.php"><i class="bi bi-bell me-2"></i>Рассылка</a></li>

@@ -8,7 +8,7 @@ if ($_SESSION['role'] !== 'student') { header('Location: ../dashboard.php'); exi
 $pageTitle = 'Мои работы';
 $userId = $_SESSION['user_id'];
 
-$stmt = $pdo->prepare("SELECT * FROM assignments WHERE student_id = ? ORDER BY due_date ASC");
+$stmt = $pdo->prepare("SELECT * FROM assignments WHERE student_id = ? ORDER BY submitted_at ASC");
 $stmt->execute([$userId]);
 $assignments = $stmt->fetchAll();
 
@@ -40,7 +40,7 @@ require_once '../includes/header.php';
                             <h5><?= e($a['title']) ?></h5>
                             <p class="text-muted small"><?= e($a['description'] ?? '') ?></p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted small"><i class="bi bi-clock me-1"></i>До: <?= date('d.m.Y', strtotime($a['due_date'])) ?></span>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i>Подано: <?= $a['submitted_at'] ? date('d.m.Y H:i', strtotime($a['submitted_at'])) : '—' ?></span>
                                 <span class="badge bg-<?= $a['status'] === 'done' ? 'success' : ($a['status'] === 'overdue' ? 'danger' : 'warning') ?>"><?= $a['status'] === 'done' ? 'Выполнено' : ($a['status'] === 'overdue' ? 'Просрочено' : 'В работе') ?></span>
                             </div>
                         </div>

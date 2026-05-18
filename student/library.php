@@ -3,38 +3,27 @@ session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
-$pageTitle = 'Библиотека работ';
-require_once '../includes/header.php';
+$user = getCurrentUser();
 
-$searchQuery = trim($_GET['search'] ?? '');
-$page = max(1, intval($_GET['page'] ?? 1));
-$perPage = 12;
-$offset = ($page - 1) * $perPage;
-
-$where = [];
-$params = [];
-if ($searchQuery) { 
-    $where[] = "(title LIKE ? OR description LIKE ?)"; 
-    $searchLike = "%$searchQuery%"; 
-    $params[] = $searchLike; 
-    $params[] = $searchLike; 
+// Обработка скачивания - ДО подключения header.php
+if (isset($_GET['download']) && is_numeric($_GET['download'])) {
+    $workId = intval($_GET['download']);
+    $stmt = $pdo->prepare("SELECT file_path, title FROM works WHERE id = ?");
+    $stmt->execute([$workId]);
+    $work = $stmt->fetch();
+    if ($work && file_exists(__DIR__ . '/../' . $work['file_path'])) {
+        $pdo->prepare("UPDATE works SET downloads = downloads + 1 WHERE id = ?")->execute([$workId]);
+        $ext = pathinfo($work['file_path'], PATHINFO_EXTENSION);
+        $filename = preg_replace('/[^a-zA-Z0-9а-яА-Я\s_-]/u', '', $work['title']) . '.' . $ext;
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize(__DIR__ . '/../' . $work['file_path']));
+        readfile(__DIR__ . '/../' . $work['file_path']);
+        exit;
+    }
 }
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-$countSql = "SELECT COUNT(*) FROM works $whereSql";
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalWorks = $countStmt->fetchColumn();
-$totalPages = ceil($totalWorks / $perPage);
-
-$sql = "SELECT w.*, u.full_name as author_name FROM works w LEFT JOIN users u ON w.uploaded_by = u.id $whereSql ORDER BY w.created_at DESC LIMIT ? OFFSET ?";
-$stmt = $pdo->prepare($sql);
-$stmt->execute(array_merge($params, [$perPage, $offset]));
-$works = $stmt->fetchAll();
-
-$fileTypes = $pdo->query("SELECT DISTINCT file_type FROM works WHERE file_type IS NOT NULL ORDER BY file_type")->fetchAll(PDO::FETCH_COLUMN);
-$groups = $pdo->query("SELECT DISTINCT group_name FROM works WHERE group_name IS NOT NULL ORDER BY group_name")->fetchAll(PDO::FETCH_COLUMN);
-
+// Обработка загрузки - ДО подключения header.php
 $uploadErrors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'upload' && $user) {
     $title = trim($_POST['title'] ?? '');
@@ -72,22 +61,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-if (isset($_GET['download']) && is_numeric($_GET['download'])) {
-    $workId = intval($_GET['download']);
-    $stmt = $pdo->prepare("SELECT file_path, title FROM works WHERE id = ?");
-    $stmt->execute([$workId]);
-    $work = $stmt->fetch();
-    if ($work && file_exists(__DIR__ . '/../' . $work['file_path'])) {
-        $pdo->prepare("UPDATE works SET downloads = downloads + 1 WHERE id = ?")->execute([$workId]);
-        $ext = pathinfo($work['file_path'], PATHINFO_EXTENSION);
-        $filename = preg_replace('/[^a-zA-Z0-9а-яА-Я\s_-]/u', '', $work['title']) . '.' . $ext;
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . filesize(__DIR__ . '/../' . $work['file_path']));
-        readfile(__DIR__ . '/../' . $work['file_path']);
-        exit;
-    }
+$pageTitle = 'Библиотека работ';
+require_once '../includes/header.php';
+
+$searchQuery = trim($_GET['search'] ?? '');
+$page = max(1, intval($_GET['page'] ?? 1));
+$perPage = 12;
+$offset = ($page - 1) * $perPage;
+
+$where = [];
+$params = [];
+if ($searchQuery) { 
+    $where[] = "(title LIKE ? OR description LIKE ?)"; 
+    $searchLike = "%$searchQuery%"; 
+    $params[] = $searchLike; 
+    $params[] = $searchLike; 
 }
+$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+$countSql = "SELECT COUNT(*) FROM works $whereSql";
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($params);
+$totalWorks = $countStmt->fetchColumn();
+$totalPages = ceil($totalWorks / $perPage);
+
+$sql = "SELECT w.*, u.full_name as author_name FROM works w LEFT JOIN users u ON w.uploaded_by = u.id $whereSql ORDER BY w.created_at DESC LIMIT ? OFFSET ?";
+$stmt = $pdo->prepare($sql);
+$stmt->execute(array_merge($params, [$perPage, $offset]));
+$works = $stmt->fetchAll();
+
+$fileTypes = $pdo->query("SELECT DISTINCT file_type FROM works WHERE file_type IS NOT NULL ORDER BY file_type")->fetchAll(PDO::FETCH_COLUMN);
+$groups = $pdo->query("SELECT DISTINCT group_name FROM works WHERE group_name IS NOT NULL ORDER BY group_name")->fetchAll(PDO::FETCH_COLUMN);
+
+$fileTypeLabels = [
+    'coursework' => 'Курсовая',
+    'lab' => 'Лабораторная',
+    'referat' => 'Реферат',
+    'other' => 'Другое',
+];
 
 function buildQuery(array $override): string {
     $params = array_merge($_GET, $override);
@@ -114,7 +125,7 @@ function buildQuery(array $override): string {
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <select name="file_type" class="form-select"><option value="">Все типы</option><?php foreach (['document', 'presentation', 'video', 'code', 'other'] as $t): ?><option value="<?= $t ?>" <?= (isset($_GET['file_type']) && $_GET['file_type'] === $t) ? 'selected' : '' ?>><?= ucfirst($t) ?></option><?php endforeach; ?></select>
+                        <select name="file_type" class="form-select"><option value="">Все типы</option><?php foreach ($fileTypeLabels as $val => $label): ?><option value="<?= $val ?>" <?= (isset($_GET['file_type']) && $_GET['file_type'] === $val) ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <button type="submit" class="btn btn-accent w-100"><i class="bi bi-funnel me-1"></i>Фильтр</button>
@@ -168,4 +179,31 @@ function buildQuery(array $override): string {
         <?php endif; ?>
     </div>
 </section>
+
+<?php if ($user): ?>
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-cloud-upload me-2"></i>Загрузить работу</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="modal-body">
+                <input type="hidden" name="action" value="upload">
+                <?php if (!empty($uploadErrors)): ?>
+                <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($uploadErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div>
+                <?php endif; ?>
+                <div class="mb-3"><label class="form-label">Название *</label><input type="text" name="title" class="form-control" required></div>
+                <div class="mb-3"><label class="form-label">Описание</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+                <div class="mb-3"><label class="form-label">Тип *</label>
+                    <select name="file_type" class="form-select" required>
+                        <option value="">Выберите...</option>
+                        <?php foreach ($fileTypeLabels as $val => $label): ?><option value="<?= $val ?>"><?= $label ?></option><?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="mb-3"><label class="form-label">Файл *</label><input type="file" name="file" class="form-control" required accept=".pdf,.doc,.docx,.zip"></div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button><button type="submit" class="btn btn-accent">Загрузить</button></div>
+        </form>
+    </div></div>
+</div>
+<?php endif; ?>
+
 <?php require_once '../includes/footer.php'; ?>

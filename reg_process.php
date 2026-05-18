@@ -37,17 +37,31 @@ try {
     }
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (full_name, username, password, role, group_name, course) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$full_name, $username, $hashed_password, $role, $group_name, $course]);
-
-    $user_id = $pdo->lastInsertId();
-    $_SESSION['user_id'] = $user_id;
-    $_SESSION['username'] = $username;
-    $_SESSION['full_name'] = $full_name;
-    $_SESSION['role'] = $role;
-    $_SESSION['group_name'] = $group_name;
-
-    header('Location: student/panel.php');
+    
+    // Проверка наличия колонки is_approved
+    $hasIsApproved = false;
+    try {
+        $cols = $pdo->query("SHOW COLUMNS FROM users")->fetchAll(PDO::FETCH_COLUMN);
+        $hasIsApproved = in_array('is_approved', $cols);
+    } catch (Exception $e) {}
+    
+    if ($hasIsApproved) {
+        $stmt = $pdo->prepare("INSERT INTO users (full_name, username, password, role, group_name, course, is_approved) VALUES (?, ?, ?, ?, ?, ?, 0)");
+        $stmt->execute([$full_name, $username, $hashed_password, $role, $group_name, $course]);
+        header('Location: register_new.php?pending=1');
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO users (full_name, username, password, role, group_name, course) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$full_name, $username, $hashed_password, $role, $group_name, $course]);
+        
+        $user_id = $pdo->lastInsertId();
+        $_SESSION['user_id'] = $user_id;
+        $_SESSION['username'] = $username;
+        $_SESSION['full_name'] = $full_name;
+        $_SESSION['role'] = $role;
+        $_SESSION['group_name'] = $group_name;
+        
+        header('Location: student/panel.php');
+    }
     exit;
 } catch (PDOException $e) {
     header('Location: register_new.php?error=Ошибка регистрации');

@@ -12,13 +12,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $studentId = intval($_POST['student_id'] ?? 0);
     $subject = trim($_POST['subject'] ?? '');
     $grade = intval($_POST['grade'] ?? 0);
-    $comment = trim($_POST['comment'] ?? '');
     
     if ($studentId > 0 && !empty($subject) && $grade >= 1 && $grade <= 5) {
-        $stmt = $pdo->prepare("INSERT INTO grades (student_id, teacher_id, subject, grade, comment) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$studentId, $userId, $subject, $grade, $comment]);
-        header('Location: grades.php?success=1');
-        exit;
+        // Получаем имя студента и группу
+        $stmt = $pdo->prepare("SELECT full_name, group_name FROM users WHERE id = ?");
+        $stmt->execute([$studentId]);
+        $student = $stmt->fetch();
+        
+        if ($student) {
+            $stmt = $pdo->prepare("INSERT INTO grades (student_id, student_name, group_name, teacher_id, subject, grade, date) VALUES (?, ?, ?, ?, ?, ?, CURDATE())");
+            $stmt->execute([$studentId, $student['full_name'], $student['group_name'], $userId, $subject, $grade]);
+            header('Location: grades.php?success=1');
+            exit;
+        }
     }
     header('Location: grades.php?error=1');
     exit;
@@ -81,7 +87,6 @@ require_once '../includes/header.php';
                                 <option value="3">3 (Удовл.)</option><option value="2">2 (Неуд.)</option>
                             </select>
                         </div>
-                        <div class="mb-2"><label class="form-label">Комментарий</label><input type="text" name="comment" class="form-control"></div>
                         <button type="submit" class="btn btn-accent w-100">Сохранить</button>
                     </form>
                     <?php endif; ?>
@@ -91,10 +96,10 @@ require_once '../includes/header.php';
         <div class="col-md-8">
             <div class="card"><div class="card-header"><i class="bi bi-list-ul me-2"></i>Журнал оценок</div>
                 <div class="card-body p-0"><div class="table-responsive"><table class="table mb-0">
-                    <thead><tr><th>Дата</th><th>Студент</th><th>Группа</th><th>Предмет</th><th>Оценка</th><th>Комм.</th></tr></thead>
+                    <thead><tr><th>Дата</th><th>Студент</th><th>Группа</th><th>Предмет</th><th>Оценка</th></tr></thead>
                     <tbody>
                         <?php if (empty($grades)): ?>
-                        <tr><td colspan="6" class="text-center">Нет оценок</td></tr>
+                        <tr><td colspan="5" class="text-center">Нет оценок</td></tr>
                         <?php else: ?>
                         <?php foreach ($grades as $g): ?>
                         <?php $bc = $g['grade'] >= 4 ? 'bg-success' : ($g['grade'] == 3 ? 'bg-warning' : 'bg-danger'); ?>
@@ -104,7 +109,6 @@ require_once '../includes/header.php';
                             <td><?= e($g['group_name'] ?? '—') ?></td>
                             <td><?= e($g['subject']) ?></td>
                             <td><span class="badge <?= $bc ?>"><?= $g['grade'] ?></span></td>
-                            <td class="text-muted small"><?= e($g['comment'] ?? '') ?></td>
                         </tr>
                         <?php endforeach; ?>
                         <?php endif; ?>

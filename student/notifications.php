@@ -3,8 +3,11 @@ session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
+if ($_SESSION['role'] !== 'student') { header('Location: ../dashboard.php'); exit; }
+
 $pageTitle = 'Уведомления';
 $userId = $_SESSION['user_id'];
+$groupName = $_SESSION['group_name'] ?? '';
 
 $stmt = $pdo->prepare("SELECT * FROM notifications WHERE target_type IN ('all', 'students') OR target_group = ? ORDER BY created_at DESC LIMIT 50");
 $stmt->execute([$groupName]);

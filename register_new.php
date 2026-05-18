@@ -12,6 +12,12 @@ require_once 'includes/header.php';
                     <p class="auth-subtitle">Присоединяйся к Учеба24</p>
                     <?php if (isset($_GET['error'])): ?><div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i><?= e($_GET['error']) ?></div><?php endif; ?>
                     <?php if (isset($_GET['success'])): ?><div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i><?= e($_GET['success']) ?></div><?php endif; ?>
+                    <?php if (isset($_GET['pending'])): ?>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-hourglass-split me-2"></i>Ваш аккаунт создан и ожидает одобрения администратора.
+                        <br><small>После одобрения вы сможете войти в систему.</small>
+                    </div>
+                    <?php endif; ?>
                     <form action="reg_process.php" method="POST" id="regForm">
                         <div class="mb-3"><label class="form-label">ФИО</label><input type="text" name="full_name" class="form-control" placeholder="Иванов Иван Иванович" required></div>
                         <div class="row">

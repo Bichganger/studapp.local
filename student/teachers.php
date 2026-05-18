@@ -3,6 +3,27 @@ session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
+$user = getCurrentUser();
+
+// Обработка добавления отзыва - ДО подключения header.php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'review' && $user) {
+    $teacherId = intval($_POST['teacher_id'] ?? 0);
+    $rating = intval($_POST['rating'] ?? 0);
+    $comment = trim($_POST['review_text'] ?? '');
+    
+    if ($teacherId > 0 && $rating >= 1 && $rating <= 5) {
+        $stmt = $pdo->prepare("INSERT INTO teacher_reviews (teacher_id, student_id, rating, comment) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$teacherId, $_SESSION['user_id'], $rating, $comment]);
+        
+        // Обновляем средний рейтинг
+        $stmt = $pdo->prepare("UPDATE teachers SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = ?) WHERE id = ?");
+        $stmt->execute([$teacherId, $teacherId]);
+        
+        header('Location: teachers.php?success=1');
+        exit;
+    }
+}
+
 $pageTitle = 'Преподаватели';
 require_once '../includes/header.php';
 
@@ -40,21 +61,6 @@ foreach ($teachers as $teacher) {
     $stmt = $pdo->prepare("SELECT tr.*, u.full_name as user_name FROM teacher_reviews tr LEFT JOIN users u ON tr.student_id = u.id WHERE tr.teacher_id = ? ORDER BY tr.created_at DESC");
     $stmt->execute([$teacher['id']]);
     $reviewsData[$teacher['id']] = $stmt->fetchAll();
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'review') {
-    $teacherId = intval($_POST['teacher_id'] ?? 0);
-    $rating = intval($_POST['rating'] ?? 0);
-    $reviewText = trim($_POST['review_text'] ?? '');
-    if ($teacherId <= 0 || $rating < 1 || $rating > 5) { header('Location: teachers.php?error=1'); exit; }
-    $stmt = $pdo->prepare("INSERT INTO teacher_reviews (teacher_id, student_id, rating, review_text) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$teacherId, $_SESSION['user_id'], $rating, $reviewText]);
-    if ($hasAvgRating) {
-        $stmt = $pdo->prepare("UPDATE teachers SET avg_rating = (SELECT AVG(rating) FROM teacher_reviews WHERE teacher_id = ?) WHERE id = ?");
-        $stmt->execute([$teacherId, $teacherId]);
-    }
-    header('Location: teachers.php?success=1');
-    exit;
 }
 
 $campuses = [];
@@ -153,8 +159,8 @@ function renderStars(float $rating): string {
                                         <span class="comment-author"><?= e($review['user_name'] ?? 'Аноним') ?></span>
                                         <span class="rating-stars" style="font-size: 0.75rem;"><?= renderStars($review['rating']) ?></span>
                                     </div>
-                                    <?php if ($review['review_text']): ?>
-                                    <p class="comment-text mb-0"><?= e($review['review_text']) ?></p>
+                                    <?php if ($review['comment']): ?>
+                                    <p class="comment-text mb-0"><?= e($review['comment']) ?></p>
                                     <?php endif; ?>
                                 </div>
                                 <?php endforeach; ?>

@@ -3,33 +3,25 @@ session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
-$pageTitle = 'Советы по обучению';
-require_once '../includes/header.php';
+$user = getCurrentUser();
+$pageTitle = 'Советы';
 
-$filterCategory = $_GET['category'] ?? '';
-
-$where = [];
-$params = [];
-if ($filterCategory) { $where[] = "category = ?"; $params[] = $filterCategory; }
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-
-$stmt = $pdo->prepare("SELECT t.*, u.full_name as author_name FROM tips t LEFT JOIN users u ON t.author_id = u.id $whereSql ORDER BY t.votes DESC, t.created_at DESC");
-$stmt->execute($params);
-$tips = $stmt->fetchAll();
-
-$categories = $pdo->query("SELECT DISTINCT category FROM tips WHERE category IS NOT NULL AND category != '' ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
-if (empty($categories)) $categories = ['general', 'exam', 'coursework', 'lab', 'lifehack'];
-
-// Обработка лайков
-if (isset($_GET['vote']) && is_numeric($_GET['vote']) && $user) {
-    $tipId = intval($_GET['vote']);
-    $stmt = $pdo->prepare("UPDATE tips SET votes = votes + 1 WHERE id = ?");
-    $stmt->execute([$tipId]);
-    header('Location: tips.php' . ($filterCategory ? '?category=' . urlencode($filterCategory) : ''));
+// Обработка лайков (POST запрос) - ДО подключения header.php
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'vote' && $user) {
+    $tipId = intval($_POST['tip_id'] ?? 0);
+    if ($tipId > 0) {
+        $stmt = $pdo->prepare("SELECT id FROM tips WHERE id = ?");
+        $stmt->execute([$tipId]);
+        if ($stmt->fetch()) {
+            $stmt = $pdo->prepare("UPDATE tips SET votes = votes + 1 WHERE id = ?");
+            $stmt->execute([$tipId]);
+        }
+    }
+    header('Location: tips.php' . ($_GET['category'] ?? '' ? '?category=' . urlencode($_GET['category']) : ''));
     exit;
 }
 
-// Обработка добавления совета
+// Обработка добавления совета - ДО подключения header.php
 $tipErrors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_tip' && $user) {
     $title = trim($_POST['title'] ?? '');
@@ -47,6 +39,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// Получение советов из таблицы tips
+$filterCategory = $_GET['category'] ?? '';
+
+$where = [];
+$params = [];
+if ($filterCategory) { $where[] = "category = ?"; $params[] = $filterCategory; }
+$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+$stmt = $pdo->prepare("SELECT t.*, u.full_name as author_name FROM tips t LEFT JOIN users u ON t.author_id = u.id $whereSql ORDER BY t.votes DESC, t.created_at DESC");
+$stmt->execute($params);
+$tips = $stmt->fetchAll();
+
+// Получение категорий
+$stmt = $pdo->query("SELECT DISTINCT category FROM tips WHERE category IS NOT NULL AND category != '' ORDER BY category");
+$categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
+if (empty($categories)) $categories = ['exam', 'coursework', 'lab', 'general', 'lifehack'];
+
 $categoryLabels = [
     'general' => 'Общее',
     'exam' => 'Экзамены',
@@ -54,13 +63,16 @@ $categoryLabels = [
     'lab' => 'Лабораторные',
     'lifehack' => 'Лайфхаки',
 ];
+
+require_once '../includes/header.php';
 ?>
+
 <section class="section">
     <div class="container">
         <div class="section-header">
-            <span class="section-label">Лайфхаки</span>
+            <span class="section-label">Советы</span>
             <h1 class="section-title">Советы по обучению</h1>
-            <p class="section-subtitle">Проверенные рекомендации от студентов</p>
+            <p class="section-subtitle">Проверенные рекомендации от студентов и преподавателей</p>
         </div>
         
         <?php if (isset($_GET['success'])): ?>
@@ -116,9 +128,13 @@ $categoryLabels = [
                             <span class="text-muted small"><i class="bi bi-calendar me-1"></i><?= date('d.m.Y', strtotime($tip['created_at'])) ?></span>
                         </div>
                         <?php if ($user): ?>
-                        <a href="?vote=<?= $tip['id'] ?><?= $filterCategory ? '&category=' . urlencode($filterCategory) : '' ?>" class="btn btn-sm btn-outline-light">
-                            <i class="bi bi-hand-thumbs-up me-1"></i><?= $tip['votes'] ?>
-                        </a>
+                        <form method="POST" action="" style="display: inline;">
+                            <input type="hidden" name="action" value="vote">
+                            <input type="hidden" name="tip_id" value="<?= $tip['id'] ?>">
+                            <button type="submit" class="btn btn-sm btn-outline-light" onclick="this.closest('.tip-card').querySelector('.vote-count').textContent = (parseInt(this.closest('.tip-card').querySelector('.vote-count').textContent) || 0) + 1;">
+                                <i class="bi bi-hand-thumbs-up me-1"></i><span class="vote-count"><?= $tip['votes'] ?></span>
+                            </button>
+                        </form>
                         <?php else: ?>
                         <span class="text-muted small"><i class="bi bi-hand-thumbs-up me-1"></i><?= $tip['votes'] ?></span>
                         <?php endif; ?>

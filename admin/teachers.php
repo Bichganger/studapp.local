@@ -3,6 +3,7 @@ session_start();
 require_once '../config/db.php';
 if (($_SESSION['role'] ?? '') !== 'admin') { header('Location: /dashboard.php'); exit; }
 
+$user = getCurrentUser();
 $pageTitle = 'Преподаватели';
 
 // Проверяем наличие колонки avg_rating
