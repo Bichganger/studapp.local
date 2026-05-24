@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
@@ -112,7 +111,7 @@ function buildQuery(array $override): string {
             <?php if ($user): ?>
             <button class="btn btn-accent" data-bs-toggle="modal" data-bs-target="#uploadModal"><i class="bi bi-cloud-upload me-2"></i>Загрузить работу</button>
             <?php else: ?>
-            <a href="/dashboard.php" class="btn btn-outline-light"><i class="bi bi-box-arrow-in-right me-2"></i>Войти для загрузки</a>
+            <a href="../dashboard.php" class="btn btn-outline-light"><i class="bi bi-box-arrow-in-right me-2"></i>Войти для загрузки</a>
             <?php endif; ?>
         </div>
         <div class="card mb-4">

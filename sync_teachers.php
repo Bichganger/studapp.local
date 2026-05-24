@@ -1,10 +1,11 @@
 <?php
 /**
- * Скрипт синхронизации преподавателей
- * Запуск: http://studapp.local/sync_teachers.php
+ * Синхронизация данных
  */
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once 'config/db.php';
 
 // Проверка: только админ

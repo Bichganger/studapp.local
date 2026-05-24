@@ -1,5 +1,4 @@
- <?php
-session_start();
+<?php
 require_once 'config/db.php';
 
 if (isset($_SESSION['user_id'])) {
@@ -31,9 +30,9 @@ require_once 'includes/header.php';
                             <label class="form-label">Пароль</label>
                             <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                         </div>
-                        <button type="submit" class="btn btn-accent w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Войти</button>
+                    <button type="submit" class="btn btn-accent w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Войти</button>
                     </form>
-                    <p class="auth-link">Нет аккаунта? <a href="/register_new.php" class="text-accent">Зарегистрироваться</a></p>
+                    <p class="auth-link">Нет аккаунта? <a href="register_new.php" class="text-accent">Зарегистрироваться</a></p>
                 </div>
             </div>
         </div>

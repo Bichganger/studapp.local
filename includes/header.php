@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// session_start() вызывается в config/app.php при подключении db.php
 require_once __DIR__ . '/../config/db.php';
 
 $user = getCurrentUser();
@@ -21,7 +19,7 @@ $isTeacher = $role === 'teacher';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css?v=8">
+    <link rel="stylesheet" href="/assets/css/style.css?v=10">
 </head>
 <body class="role-<?= $role ?? 'guest' ?>">
 <?php if ($flash): ?>

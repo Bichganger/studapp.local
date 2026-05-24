@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once 'config/db.php';
+
 if (isset($_SESSION['user_id'])) {
     switch ($_SESSION['role']) {
         case 'admin': header('Location: admin/dashboard.php'); exit;
@@ -25,10 +26,10 @@ $user = getCurrentUser();
                     </div>
                     <div class="hero-buttons justify-content-center d-flex">
                         <?php if ($user): ?>
-                        <a href="/dashboard.php" class="btn btn-accent btn-lg px-4"><i class="bi bi-speedometer2 me-2"></i>В личный кабинет</a>
+                        <a href="dashboard.php" class="btn btn-accent btn-lg px-4"><i class="bi bi-speedometer2 me-2"></i>В личный кабинет</a>
                         <?php else: ?>
-                        <a href="/dashboard.php" class="btn btn-accent btn-lg px-4"><i class="bi bi-box-arrow-in-right me-2"></i>Войти</a>
-                        <a href="/register_new.php" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-person-plus me-2"></i>Регистрация</a>
+                        <a href="dashboard.php" class="btn btn-accent btn-lg px-4"><i class="bi bi-box-arrow-in-right me-2"></i>Войти</a>
+                        <a href="register_new.php" class="btn btn-outline-light btn-lg px-4"><i class="bi bi-person-plus me-2"></i>Регистрация</a>
                         <?php endif; ?>
                     </div>
                 </div>

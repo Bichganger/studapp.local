@@ -1,9 +1,11 @@
 <?php
-session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
-if ($_SESSION['role'] !== 'student') { header('Location: ../dashboard.php'); exit; }
+if ($_SESSION['role'] !== 'student') { 
+    header('Location: ../dashboard.php'); 
+    exit; 
+}
 
 $pageTitle = 'Кабинет студента';
 $userId = $_SESSION['user_id'];

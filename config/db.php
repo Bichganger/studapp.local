@@ -1,9 +1,12 @@
 <?php
+// Подключение конфигурации приложения
+require_once __DIR__ . '/app.php';
+
 // Конфигурация БД
-$host = 'localhost';
-$db   = 'studapp';
-$user = 'root';
-$pass = '';
+$host = getenv('DB_HOST') ?: 'localhost';
+$db   = getenv('DB_NAME') ?: 'studapp';
+$user = getenv('DB_USER') ?: 'root';
+$pass = getenv('DB_PASS') ?: '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -42,8 +45,12 @@ function getFlashMessage(): ?array {
 function getCurrentUser(): ?array {
     if (!isset($_SESSION['user_id'])) return null;
     global $pdo;
-    $stmt = $pdo->prepare("SELECT id, full_name as name, username, email, role, group_name, course FROM users WHERE id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    return $stmt->fetch() ?: null;
+    try {
+        $stmt = $pdo->prepare("SELECT id, full_name as name, username, email, role, group_name, course FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        return $stmt->fetch() ?: null;
+    } catch (PDOException $e) {
+        return null;
+    }
 }
 

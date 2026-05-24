@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once 'config/db.php';
 $pageTitle = 'Регистрация';
 require_once 'includes/header.php';
 ?>
@@ -31,7 +31,7 @@ require_once 'includes/header.php';
                         <input type="hidden" name="role" value="student">
                         <button type="submit" class="btn btn-accent w-100"><i class="bi bi-rocket-takeoff-fill me-2"></i>Начать обучение</button>
                     </form>
-                    <p class="auth-link">Уже есть аккаунт? <a href="/dashboard.php" class="text-accent">Войти</a></p>
+                    <p class="auth-link">Уже есть аккаунт? <a href="dashboard.php" class="text-accent">Войти</a></p>
                 </div>
             </div>
         </div>

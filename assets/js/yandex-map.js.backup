@@ -31,7 +31,8 @@ function init() {
     data.campuses.forEach(c => {
         const placemark = new ymaps.Placemark([c.lat, c.lng], {
             balloonContentHeader: `<strong style="color:${c.color}">${c.name}</strong>`,
-            balloonContentBody: `<p style="color:#e0e4ff">${c.address}</p>`
+            balloonContentBody: `<p style="color:#e0e4ff">${c.address}</p>`,
+            campusData: c
         }, {
             preset: 'islands#circleIcon',
             iconColor: c.color.replace('#', '')
@@ -49,7 +50,8 @@ function init() {
             ${loc.hours ? `<span style="color:#5a6380">${loc.hours}</span>` : ''}`;
 
         const placemark = new ymaps.Placemark([loc.lat, loc.lng], {
-            balloonContentBody: content
+            balloonContentBody: content,
+            locationData: loc
         }, {
             preset: `islands#${cat.icon.replace('bi-', '')}Icon`,
             iconColor: cat.color.replace('#', '')
@@ -97,5 +99,11 @@ function init() {
     // Сброс
     document.getElementById('resetMap').addEventListener('click', () => {
         map.setCenter([54.7150, 20.4885], 15, { duration: 300 });
+    });
+    
+    // Клик по карте для получения координат (для админки)
+    map.events.add('click', function(e) {
+        const coords = e.get('coords');
+        console.log('Clicked at:', coords[0], coords[1]);
     });
 }

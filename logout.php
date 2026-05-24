@@ -1,5 +1,8 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 session_destroy();
-header('Location: dashboard.php');
+header('Location: ' . (defined('BASE_URL') ? BASE_URL : '') . '/dashboard.php');
+exit;
 exit;

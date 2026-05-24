@@ -93,6 +93,10 @@ a:hover {
 
 .navbar-brand {
     color: var(--text-primary) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
 }
 
 .logo-icon {
@@ -106,6 +110,7 @@ a:hover {
     font-size: 1.4rem;
     color: var(--bg-dark);
     box-shadow: 0 4px 15px rgba(0, 230, 118, 0.3);
+    flex-shrink: 0;
 }
 
 .brand-title {
@@ -114,6 +119,7 @@ a:hover {
     font-size: 1.1rem;
     line-height: 1.2;
     display: block;
+    white-space: nowrap;
 }
 
 .brand-subtitle {
@@ -122,6 +128,7 @@ a:hover {
     font-weight: 600;
     letter-spacing: 1px;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .nav-link {
@@ -753,6 +760,17 @@ a:hover {
     height: 16px;
     border-radius: 50%;
     flex-shrink: 0;
+}
+
+.yandex-map {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.yandex-map iframe,
+.yandex-map div {
+    border-radius: var(--radius);
 }
 
 /* === Tips === */

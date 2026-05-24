@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
@@ -20,39 +19,73 @@ $campuses = [
     ['name' => 'Спортивная 6', 'address' => 'ул. Спортивная, 6', 'lat' => 54.7125, 'lng' => 20.4860, 'color' => '#00e676'],
     ['name' => 'Озерова 7', 'address' => 'ул. Озерова, 7', 'lat' => 54.7180, 'lng' => 20.4885, 'color' => '#40c4ff'],
 ];
-
-// Дополнительные POI вокруг корпусов
-$locations = [
-    ['name' => 'Столовая «Сытно»', 'lat' => 54.7152, 'lng' => 20.4905, 'type' => 'cafeteria', 'address' => 'ул. Баха, 7', 'hours' => '09:00–17:00'],
-    ['name' => 'Остановка «Ул. Баха»', 'lat' => 54.7150, 'lng' => 20.4900, 'type' => 'bus_stop', 'address' => 'ул. Баха', 'hours' => ''],
-    ['name' => 'Кофейня «Bean&Grain»', 'lat' => 54.7140, 'lng' => 20.4925, 'type' => 'cafeteria', 'address' => 'ул. Баха, 12', 'hours' => '08:00–21:00'],
-    ['name' => 'Столовая колледжа', 'lat' => 54.7120, 'lng' => 20.4870, 'type' => 'cafeteria', 'address' => 'ул. Спортивная, 6', 'hours' => '09:00–16:00'],
-    ['name' => 'Остановка «Спортивная»', 'lat' => 54.7130, 'lng' => 20.4875, 'type' => 'bus_stop', 'address' => 'ул. Спортивная', 'hours' => ''],
-    ['name' => 'Канцтовары «Тетрадка»', 'lat' => 54.7115, 'lng' => 20.4850, 'type' => 'other', 'address' => 'ул. Спортивная, 2', 'hours' => '10:00–20:00'],
-    ['name' => 'Бургерная «GrillHouse»', 'lat' => 54.7185, 'lng' => 20.4875, 'type' => 'cafeteria', 'address' => 'ул. Озерова, 5', 'hours' => '11:00–23:00'],
-    ['name' => 'Остановка «Ул. Озерова»', 'lat' => 54.7175, 'lng' => 20.4890, 'type' => 'bus_stop', 'address' => 'ул. Озерова', 'hours' => ''],
-    ['name' => 'Магазин «Продукты 24»', 'lat' => 54.7190, 'lng' => 20.4895, 'type' => 'other', 'address' => 'ул. Озерова, 10', 'hours' => 'Круглосуточно'],
-];
-
-$locationsJson = json_encode($locations, JSON_UNESCAPED_UNICODE);
-$campusesJson  = json_encode($campuses, JSON_UNESCAPED_UNICODE);
-$categoriesJson = json_encode($categories, JSON_UNESCAPED_UNICODE);
 ?>
 
 <style>
-#map {
+#yandex-map {
+    width: 100%;
     height: 65vh;
     min-height: 450px;
+    margin: 0;
+    padding: 0;
+}
+
+.map-container-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
     border-radius: var(--radius);
     overflow: hidden;
     border: 1px solid var(--border-color);
-    margin-top: 16px;
 }
-.map-controls {
-    background: var(--bg-card);
+
+/* Контроллер карты - плавающий сверху */
+.map-nav-controls {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    padding: 16px 20px;
+    border-radius: 12px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 95%;
+    backdrop-filter: blur(10px);
+}
+
+.map-nav-controls button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.map-nav-controls button:hover {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-nav-controls button.active {
+    background: var(--gradient-primary);
+    color: var(--bg-dark);
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3);
 }
 </style>
 
@@ -64,51 +97,91 @@ $categoriesJson = json_encode($categories, JSON_UNESCAPED_UNICODE);
             <p class="section-subtitle">Всё важное рядом с корпусами — найди за 30 секунд</p>
         </div>
 
-        <div class="map-controls">
-            <div class="row align-items-center g-3">
-                <div class="col-lg-6">
-                    <h6 class="mb-2" style="color: var(--text-primary);"><i class="bi bi-layers me-2"></i>Категории</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <?php foreach ($categories as $key => $cat): ?>
-                        <div class="form-check map-legend-item">
-                            <input class="form-check-input category-toggle" type="checkbox" value="<?= e($key) ?>" id="cat_<?= e($key) ?>" checked>
-                            <label class="form-check-label d-flex align-items-center gap-2" for="cat_<?= e($key) ?>" style="color: var(--text-primary);">
-                                <span class="map-legend-color" style="background:<?= $cat['color'] ?>;width:12px;height:12px;border-radius:50%;display:inline-block;"></span>
-                                <i class="bi <?= $cat['icon'] ?>" style="color:<?= $cat['color'] ?>"></i>
-                                <?= e($cat['name']) ?>
-                            </label>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <h6 class="mb-2" style="color: var(--text-primary);"><i class="bi bi-buildings me-2"></i>Корпуса</h6>
-                    <div class="d-flex flex-wrap gap-2">
-                        <?php foreach ($campuses as $campus): ?>
-                        <button class="btn btn-sm btn-outline-light fly-to-campus"
-                                data-lat="<?= $campus['lat'] ?>" data-lng="<?= $campus['lng'] ?>"
-                                style="border-color:<?= $campus['color'] ?>; color:<?= $campus['color'] ?>">
-                            <i class="bi bi-geo-alt-fill me-1"></i><?= e($campus['name']) ?>
-                        </button>
-                        <?php endforeach; ?>
-                        <button class="btn btn-sm btn-accent" id="resetMap">
-                            <i class="bi bi-arrows-fullscreen me-1"></i>Весь Калининград
-                        </button>
-                    </div>
-                </div>
+        <!-- Контейнер для карты -->
+        <div class="map-container-wrapper">
+            <!-- Кнопки навигации поверх карты -->
+            <div class="map-nav-controls">
+                <?php foreach ($campuses as $i => $campus): ?>
+                <button class="campus-nav-btn" data-lat="<?= $campus['lat'] ?>" data-lng="<?= $campus['lng'] ?>">
+                    <i class="bi bi-building me-1"></i><?= e($campus['name']) ?>
+                </button>
+                <?php endforeach; ?>
+                <button class="campus-nav-btn active" id="resetMapView">
+                    <i class="bi bi-arrows-move me-1"></i>Обзор
+                </button>
+            </div>
+            
+            <!-- Карта из Яндекс.Конструктора -->
+            <div id="yandex-map">
+                <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A5547ee495eda499ca87c24a525d7bb19b0cbe616a9c586f1273a3f4fd8533458&amp;width=100%25&amp;height=100%25&amp;lang=ru_RU&amp;scroll=true"></script>
             </div>
         </div>
-        <div id="map"></div>
     </div>
 </section>
 
-<script src="https://api-maps.yandex.ru/2.1/?apikey=&lang=ru_RU"></script>
 <script>
-window.mapData = {
-    locations: <?= $locationsJson ?>,
-    campuses: <?= $campusesJson ?>,
-    categories: <?= $categoriesJson ?>
+// Данные для навигации
+window.mapPoints = {
+    campuses: <?= json_encode($campuses, JSON_UNESCAPED_UNICODE) ?>
 };
+
+// Обработчики навигации
+document.addEventListener('DOMContentLoaded', function() {
+    let mapLoaded = false;
+    
+    // Навигация по кнопкам на карте
+    document.querySelectorAll('.campus-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const lat = parseFloat(this.dataset.lat);
+            const lng = parseFloat(this.dataset.lng);
+            
+            // Активный класс
+            document.querySelectorAll('.campus-nav-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Если карта загрузилась, пробуем переместиться
+            if (mapLoaded) {
+                // Пытаемся найти iframe карты и прокрутить к нему
+                const mapContainer = document.getElementById('yandex-map');
+                if (mapContainer) {
+                    // Прокрутка к карте с плавным эффектом
+                    mapContainer.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            } else {
+                // Если карта ещё не загрузилась - просто скроллим
+                const mapContainer = document.getElementById('yandex-map');
+                if (mapContainer) {
+                    mapContainer.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }
+            }
+        });
+    });
+    
+    // Кнопка сброса
+    document.getElementById('resetMapView').addEventListener('click', function() {
+        document.querySelectorAll('.campus-nav-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const mapContainer = document.getElementById('yandex-map');
+        if (mapContainer) {
+            mapContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    });
+    
+    // Отслеживаем загрузку карты
+    setTimeout(function() {
+        mapLoaded = true;
+        console.log('Карта готова к навигации');
+    }, 3000);
+});
 </script>
-<script src="/assets/js/yandex-map.js"></script>
 <?php require_once '../includes/footer.php'; ?>

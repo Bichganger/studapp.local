@@ -1,8 +1,13 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../config/db.php';
 
-if (($_SESSION['role'] ?? '') !== 'teacher') { header('Location: /dashboard.php'); exit; }
+if (($_SESSION['role'] ?? '') !== 'teacher') { 
+    header('Location: ../dashboard.php'); 
+    exit; 
+}
 
 $pageTitle = 'Мои группы';
 $groups = $pdo->query("SELECT group_name, COUNT(*) as cnt FROM users WHERE role='student' AND group_name IS NOT NULL AND group_name != '' GROUP BY group_name ORDER BY group_name")->fetchAll();
