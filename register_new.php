@@ -28,8 +28,16 @@ require_once 'includes/header.php';
                         <div class="mb-3"><label class="form-label">Логин</label><input type="text" name="username" class="form-control" placeholder="ivanov_i" required></div>
                         <div class="mb-3"><label class="form-label">Пароль</label><input type="password" name="password" class="form-control" id="password" required minlength="6"><div class="progress mt-2" style="height:4px"><div class="progress-bar bg-danger" id="strengthBar" style="width:0%"></div></div><small class="text-muted" id="strengthText">Слабый пароль</small></div>
                         <div class="mb-4"><label class="form-label">Повторите пароль</label><input type="password" name="password_confirm" class="form-control" required></div>
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="consentCheckbox" name="consent" required>
+                                <label class="form-check-label" for="consentCheckbox">
+                                    Я соглашаюсь на <a href="#" class="text-accent" data-bs-toggle="modal" data-bs-target="#consentModal">обработку персональных данных</a>
+                                </label>
+                            </div>
+                        </div>
                         <input type="hidden" name="role" value="student">
-                        <button type="submit" class="btn btn-accent w-100"><i class="bi bi-rocket-takeoff-fill me-2"></i>Начать обучение</button>
+                        <button type="submit" class="btn btn-accent w-100" id="submitBtn" disabled><i class="bi bi-rocket-takeoff-fill me-2"></i>Начать обучение</button>
                     </form>
                     <p class="auth-link">Уже есть аккаунт? <a href="dashboard.php" class="text-accent">Войти</a></p>
                 </div>
@@ -37,6 +45,55 @@ require_once 'includes/header.php';
         </div>
     </div>
 </section>
+
+<!-- Modal согласия на обработку персональных данных -->
+<div class="modal fade" id="consentModal" tabindex="-1" aria-labelledby="consentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title" id="consentModalLabel" style="color: var(--text-primary);"><i class="bi bi-shield-check me-2"></i>Согласие на обработку персональных данных</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" style="filter: brightness(0) invert(1);"></button>
+            </div>
+            <div class="modal-body" style="color: var(--text-secondary); line-height: 1.7;">
+                <p><strong>1. Общие положения</strong></p>
+                <p>Настоящим я, являясь пользователем сайта «Учеба24», даю своё согласие на обработку моих персональных данных в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных».</p>
+                
+                <p><strong>2. Персональные данные</strong></p>
+                <p>Под персональными данными понимаются данные, предоставляемые мной при регистрации и использовании сервиса:</p>
+                <ul>
+                    <li>ФИО (полное имя)</li>
+                    <li>Номер группы и курс обучения</li>
+                    <li>Логин (username)</li>
+                    <li>Пароль (хранится в зашифрованном виде)</li>
+                </ul>
+                
+                <p><strong>3. Цели обработки</strong></p>
+                <p>Обработка персональных данных осуществляется в следующих целях:</p>
+                <ul>
+                    <li>Регистрация и авторизация пользователя в системе</li>
+                    <li>Предоставление доступа к образовательным материалам и сервисам</li>
+                    <li>Организация учебного процесса</li>
+                    <li>Техническая поддержка и улучшение качества услуг</li>
+                </ul>
+                
+                <p><strong>4. Действия с персональными данными</strong></p>
+                <p>Согласие включает право на сбор, хранение, систематизацию, накопление, использование, передачу (в том числе трансграничную) в пределах необходимой инфраструктуры, обезличивание, блокирование и удаление персональных данных.</p>
+                
+                <p><strong>5. Срок действия</strong></p>
+                <p>Согласие действует с момента его предоставления до момента его отзыва в письменной форме. После отзыва согласия обработка данных может продолжаться в случаях, предусмотренных законодательством РФ.</p>
+                
+                <p><strong>6. Безопасность</strong></p>
+                <p>Мы принимаем все необходимые технические и организационные меры для защиты персональных данных от несанкционированного доступа, изменения или уничтожения.</p>
+                
+                <p><strong>7. Контакты</strong></p>
+                <p>По вопросам, связанным с обработкой персональных данных, вы можете обратиться через форму обратной связи в личном кабинете.</p>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                <button type="button" class="btn btn-accent" data-bs-dismiss="modal">Понятно</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 const passwordInput = document.getElementById('password');
 const strengthBar = document.getElementById('strengthBar');
@@ -57,7 +114,16 @@ passwordInput.addEventListener('input', function() {
 document.getElementById('regForm').addEventListener('submit', function(e) {
     const password = document.querySelector('[name="password"]').value;
     const confirm = document.querySelector('[name="password_confirm"]').value;
+    const consent = document.getElementById('consentCheckbox').checked;
     if (password !== confirm) { e.preventDefault(); alert('Пароли не совпадают!'); return false; }
+    if (!consent) { e.preventDefault(); alert('Необходимо согласие на обработку персональных данных!'); return false; }
+});
+
+// Управление состоянием кнопки регистрации
+const consentCheckbox = document.getElementById('consentCheckbox');
+const submitBtn = document.getElementById('submitBtn');
+consentCheckbox.addEventListener('change', function() {
+    submitBtn.disabled = !this.checked;
 });
 </script>
 <?php require_once 'includes/footer.php'; ?>

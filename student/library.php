@@ -1,4 +1,4 @@
-<?php
+при <?php
 require_once '../config/db.php';
 require_once '../protected/auth_guard.php';
 
@@ -119,12 +119,12 @@ function buildQuery(array $override): string {
                 <form method="GET" action="" class="row g-3">
                     <div class="col-lg-6 col-md-6">
                         <div class="input-group">
-                            <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search text-muted"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0" placeholder="Поиск по названию или описанию..." value="<?= e($searchQuery) ?>">
+                            <span class="input-group-text library-search-icon"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" class="form-control library-search-input border-start-0" placeholder="Поиск по названию или описанию..." value="<?= e($searchQuery) ?>">
                         </div>
                     </div>
                     <div class="col-lg-3 col-md-6">
-                        <select name="file_type" class="form-select"><option value="">Все типы</option><?php foreach ($fileTypeLabels as $val => $label): ?><option value="<?= $val ?>" <?= (isset($_GET['file_type']) && $_GET['file_type'] === $val) ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select>
+                        <select name="file_type" class="form-select library-search-select"><option value="">Все типы</option><?php foreach ($fileTypeLabels as $val => $label): ?><option value="<?= $val ?>" <?= (isset($_GET['file_type']) && $_GET['file_type'] === $val) ? 'selected' : '' ?>><?= $label ?></option><?php endforeach; ?></select>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <button type="submit" class="btn btn-accent w-100"><i class="bi bi-funnel me-1"></i>Фильтр</button>

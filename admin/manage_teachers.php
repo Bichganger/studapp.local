@@ -92,9 +92,9 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
 
 // Получение списка преподавателей
 if ($hasAvgRating) {
-    $teachers = $pdo->query("SELECT t.*, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
+    $teachers = $pdo->query("SELECT t.*, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
 } else {
-    $teachers = $pdo->query("SELECT t.*, COALESCE((SELECT ROUND(AVG(r.rating), 1) FROM teacher_reviews r WHERE r.teacher_id = t.id), 0) as avg_rating, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
+    $teachers = $pdo->query("SELECT t.*, COALESCE((SELECT ROUND(AVG(r.rating), 1) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0), 0) as avg_rating, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
 }
 
 // Получение выбранного преподавателя для редактирования
@@ -224,16 +224,16 @@ require_once '../includes/header.php';
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-sm mb-0">
-                                <thead>
-                                    <tr>
+                        <thead>
+                                <tr>
                                         <th>ФИО</th>
                                         <th>Специализация</th>
                                         <th>Корпус</th>
                                         <th>Рейтинг</th>
                                         <th>Отзывов</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
+                                        <th>Действия</th>
+                                </tr>
+                        </thead>
                                 <tbody>
                                     <?php if (empty($teachers)): ?>
                                     <tr><td colspan="6" class="text-center py-3">Нет преподавателей</td></tr>
@@ -246,13 +246,19 @@ require_once '../includes/header.php';
                                         <td>
                                             <?php 
                                             $rating = floatval($t['avg_rating'] ?? 0);
-                                            for ($i = 1; $i <= 5; $i++) {
-                                                if ($i <= $rating) echo '<i class="bi bi-star-fill text-warning"></i>';
-                                                elseif ($i - 0.5 <= $rating) echo '<i class="bi bi-star-half text-warning"></i>';
-                                                else echo '<i class="bi bi-star text-muted"></i>';
-                                            }
+                                            $percentage = ($rating / 5) * 100;
+                                            $circumference = 2 * M_PI * 14;
+                                            $offset = $circumference - ($percentage / 100) * $circumference;
+                                            
+                                            if ($rating < 2) $color = '#ff5252';
+                                            elseif ($rating < 3.5) $color = '#ffd740';
+                                            else $color = '#00e676';
                                             ?>
-                                            <?= number_format($rating, 1) ?>
+                                            <svg width="32" height="32" viewBox="0 0 32 32">
+                                                <circle cx="16" cy="16" r="14" stroke="var(--border-color)" stroke-width="3" fill="none"/>
+                                                <circle cx="16" cy="16" r="14" stroke="<?= $color ?>" stroke-width="3" fill="none" stroke-dasharray="<?= $circumference ?>" stroke-dashoffset="<?= $offset ?>" transform="rotate(-90 16 16)" stroke-linecap="round"/>
+                                            </svg>
+                                            <small><?= number_format($rating, 1) ?></small>
                                         </td>
                                         <td><?= $t['review_count'] ?? 0 ?></td>
                                         <td>

@@ -18,6 +18,10 @@ if (empty($full_name) || empty($username) || empty($password)) {
     header('Location: register_new.php?error=Заполните все поля');
     exit;
 }
+if (!isset($_POST['consent']) || $_POST['consent'] !== 'on') {
+    header('Location: register_new.php?error=Необходимо согласие на обработку персональных данных');
+    exit;
+}
 if ($password !== $password_confirm) {
     header('Location: register_new.php?error=Пароли не совпадают');
     exit;

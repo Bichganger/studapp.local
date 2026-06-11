@@ -11,11 +11,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $comment = trim($_POST['review_text'] ?? '');
     
     if ($teacherId > 0 && $rating >= 1 && $rating <= 5) {
-        $stmt = $pdo->prepare("INSERT INTO teacher_reviews (teacher_id, student_id, rating, comment) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$teacherId, $_SESSION['user_id'], $rating, $comment]);
+        // Проверяем, оставлял ли уже отзыв этот студент
+        $stmt = $pdo->prepare("SELECT id FROM teacher_reviews WHERE teacher_id = ? AND student_id = ?");
+        $stmt->execute([$teacherId, $_SESSION['user_id']]);
         
-        // Обновляем средний рейтинг
-        $stmt = $pdo->prepare("UPDATE teachers SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = ?) WHERE id = ?");
+        if ($stmt->fetch()) {
+            // Обновляем существующий отзыв
+            $stmt = $pdo->prepare("UPDATE teacher_reviews SET rating = ?, comment = ? WHERE teacher_id = ? AND student_id = ?");
+            $stmt->execute([$rating, $comment, $teacherId, $_SESSION['user_id']]);
+        } else {
+            // Создаём новый отзыв
+            $stmt = $pdo->prepare("INSERT INTO teacher_reviews (teacher_id, student_id, rating, comment, is_approved) VALUES (?, ?, ?, ?, 0)");
+            $stmt->execute([$teacherId, $_SESSION['user_id'], $rating, $comment]);
+        }
+        
+        // Обновляем средний рейтинг (только одобренные отзывы)
+        $stmt = $pdo->prepare("UPDATE teachers SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = ? AND is_approved = 1) WHERE id = ?");
         $stmt->execute([$teacherId, $teacherId]);
         
         header('Location: teachers.php?success=1');
@@ -57,7 +68,8 @@ $teachers = $stmt->fetchAll();
 
 $reviewsData = [];
 foreach ($teachers as $teacher) {
-    $stmt = $pdo->prepare("SELECT tr.*, u.full_name as user_name FROM teacher_reviews tr LEFT JOIN users u ON tr.student_id = u.id WHERE tr.teacher_id = ? ORDER BY tr.created_at DESC");
+    // Показываем только одобренные и не скрытые отзывы
+    $stmt = $pdo->prepare("SELECT tr.*, u.full_name as user_name FROM teacher_reviews tr LEFT JOIN users u ON tr.student_id = u.id WHERE tr.teacher_id = ? AND tr.is_approved = 1 AND tr.is_hidden = 0 ORDER BY tr.created_at DESC");
     $stmt->execute([$teacher['id']]);
     $reviewsData[$teacher['id']] = $stmt->fetchAll();
 }
@@ -69,13 +81,30 @@ if ($hasCampus) {
     } catch (Exception $e) {}
 }
 if (empty($campuses)) $campuses = ['Брамса 9', 'Спортивная 6', 'Озерова 7'];
-function renderStars(float $rating): string {
-    $html = '';
-    for ($i = 1; $i <= 5; $i++) {
-        if ($i <= $rating) $html .= '<i class="bi bi-star-fill"></i>';
-        elseif ($i - 0.5 <= $rating) $html .= '<i class="bi bi-star-half"></i>';
-        else $html .= '<i class="bi bi-star"></i>';
+
+// Функция для отрисовки кругового индикатора рейтинга
+function renderRatingCircle(float $rating, int $size = 40, $showNumber = true): string {
+    $rating = max(0, min(5, $rating));
+    $percentage = ($rating / 5) * 100;
+    
+    // Цвет в зависимости от рейтинга
+    if ($rating < 2) $color = '#ff5252';      // красный
+    elseif ($rating < 3.5) $color = '#ffd740'; // жёлтый
+    else $color = '#00e676';                   // зелёный
+    
+    $circumference = 2 * M_PI * ($size / 2 - 4);
+    $offset = $circumference - ($percentage / 100) * $circumference;
+    
+    $html = '<div class="rating-circle" style="width: ' . $size . 'px; height: ' . $size . 'px;" title="Рейтинг: ' . number_format($rating, 1) . '">';
+    $html .= '<svg width="' . $size . '" height="' . $size . '" viewBox="0 0 ' . $size . ' ' . $size . '">';
+    $html .= '<circle cx="' . ($size/2) . '" cy="' . ($size/2) . '" r="' . ($size/2 - 4) . '" stroke="var(--border-color)" stroke-width="4" fill="none"/>';
+    $html .= '<circle cx="' . ($size/2) . '" cy="' . ($size/2) . '" r="' . ($size/2 - 4) . '" stroke="' . $color . '" stroke-width="4" fill="none" stroke-dasharray="' . $circumference . '" stroke-dashoffset="' . $offset . '" transform="rotate(-90 ' . ($size/2) . ' ' . ($size/2) . ')" stroke-linecap="round"/>';
+    $html .= '</svg>';
+    if ($showNumber) {
+        $html .= '<span class="rating-circle-number" style="color: ' . $color . ';">' . number_format($rating, 1) . '</span>';
     }
+    $html .= '</div>';
+    
     return $html;
 }
 ?>
@@ -141,8 +170,8 @@ function renderStars(float $rating): string {
                     </div>
                     <div class="teacher-footer">
 <div class="d-flex align-items-center gap-2">
-    <span class="rating-stars"><?= renderStars(floatval($teacher['avg_rating'] ?? $teacher['calculated_rating'] ?? 0)) ?></span>
-    <span class="text-muted small"><?= number_format(floatval($teacher['avg_rating'] ?? $teacher['calculated_rating'] ?? 0), 1) ?> (<?= count($reviews) ?>)</span>
+    <?= renderRatingCircle(floatval($teacher['avg_rating'] ?? 0), 40) ?>
+    <span class="text-muted small"><?= count($reviews) ?> отзыв<?= count($reviews) === 1 ? '' : (count($reviews) < 5 ? 'а' : 'ов') ?></span>
 </div>
                         <button class="btn btn-sm btn-outline-light" data-bs-toggle="collapse" data-bs-target="#reviews<?= $teacher['id'] ?>"><i class="bi bi-chat-left-text me-1"></i>Отзывы</button>
                     </div>
@@ -156,7 +185,10 @@ function renderStars(float $rating): string {
                                 <div class="comment-item">
                                     <div class="comment-header">
                                         <span class="comment-author"><?= e($review['user_name'] ?? 'Аноним') ?></span>
-                                        <span class="rating-stars" style="font-size: 0.75rem;"><?= renderStars($review['rating']) ?></span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <?= renderRatingCircle($review['rating'], 28, false) ?>
+                                            <small class="text-muted"><?= $review['rating'] ?>/5</small>
+                                        </div>
                                     </div>
                                     <?php if ($review['comment']): ?>
                                     <p class="comment-text mb-0"><?= e($review['comment']) ?></p>
@@ -169,14 +201,18 @@ function renderStars(float $rating): string {
                             <form method="POST" action="">
                                 <input type="hidden" name="action" value="review">
                                 <input type="hidden" name="teacher_id" value="<?= $teacher['id'] ?>">
-                                <div class="row g-2">
-                                    <div class="col-4">
-                                        <select name="rating" class="form-select form-select-sm" required>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-auto">
+                                        <select name="rating" class="form-select form-select-sm rating-select" required style="min-width: 140px;">
                                             <option value="">Оценка</option>
-                                            <option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option>
+                                            <option value="5">5 - Отлично</option>
+                                            <option value="4">4 - Хорошо</option>
+                                            <option value="3">3 - Удовлетворительно</option>
+                                            <option value="2">2 - Плохо</option>
+                                            <option value="1">1 - Очень плохо</option>
                                         </select>
                                     </div>
-                                    <div class="col-8">
+                                    <div class="col">
                                         <div class="input-group">
                                             <input type="text" name="review_text" class="form-control form-control-sm" placeholder="Ваш отзыв...">
                                             <button type="submit" class="btn btn-accent btn-sm"><i class="bi bi-send"></i></button>

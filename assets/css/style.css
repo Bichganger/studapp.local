@@ -1000,6 +1000,62 @@ a:hover {
     font-size: 0.9rem;
 }
 
+/* === Rating Circle === */
+.rating-circle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rating-circle svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.rating-circle-number {
+    position: relative;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 1;
+}
+
+.rating-select {
+    min-width: 120px;
+}
+
+.rating-select option[value="5"] { color: #00e676; }
+.rating-select option[value="4"] { color: #7c4dff; }
+.rating-select option[value="3"] { color: #ffd740; }
+.rating-select option[value="2"] { color: #ff9800; }
+.rating-select option[value="1"] { color: #ff5252; }
+
+/* === Library Search Bar === */
+.library-search-input,
+.library-search-select {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.library-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.library-search-input:focus,
+.library-search-select:focus {
+    background: var(--bg-input) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.1) !important;
+}
+
+.library-search-icon {
+    background: var(--bg-input) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-muted) !important;
+}
+
 .comment-date {
     color: var(--text-muted);
     font-size: 0.8rem;
