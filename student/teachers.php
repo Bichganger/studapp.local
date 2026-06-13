@@ -11,22 +11,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $comment = trim($_POST['review_text'] ?? '');
     
     if ($teacherId > 0 && $rating >= 1 && $rating <= 5) {
-        // Проверяем, оставлял ли уже отзыв этот студент
-        $stmt = $pdo->prepare("SELECT id FROM teacher_reviews WHERE teacher_id = ? AND student_id = ?");
-        $stmt->execute([$teacherId, $_SESSION['user_id']]);
+        // Проверяем количество существующих отзывов на этого преподавателя
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM teacher_reviews WHERE teacher_id = ? AND is_approved = 1 AND is_hidden = 0");
+        $stmt->execute([$teacherId]);
+        $reviewCount = $stmt->fetchColumn();
         
-        if ($stmt->fetch()) {
-            // Обновляем существующий отзыв
-            $stmt = $pdo->prepare("UPDATE teacher_reviews SET rating = ?, comment = ? WHERE teacher_id = ? AND student_id = ?");
-            $stmt->execute([$rating, $comment, $teacherId, $_SESSION['user_id']]);
-        } else {
-            // Создаём новый отзыв
-            $stmt = $pdo->prepare("INSERT INTO teacher_reviews (teacher_id, student_id, rating, comment, is_approved) VALUES (?, ?, ?, ?, 0)");
-            $stmt->execute([$teacherId, $_SESSION['user_id'], $rating, $comment]);
+        // Ограничиваем до 5 отзывов на преподавателя
+        if ($reviewCount >= 5) {
+            header('Location: teachers.php?error=limit_reached');
+            exit;
         }
         
-        // Обновляем средний рейтинг (только одобренные отзывы)
-        $stmt = $pdo->prepare("UPDATE teachers SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = ? AND is_approved = 1) WHERE id = ?");
+        // Создаём новый отзыв
+        $stmt = $pdo->prepare("INSERT INTO teacher_reviews (teacher_id, student_id, rating, comment, is_approved) VALUES (?, ?, ?, ?, 0)");
+        $stmt->execute([$teacherId, $_SESSION['user_id'], $rating, $comment]);
+        
+        // Обновляем средний рейтинг (только одобренные и не скрытые отзывы)
+        $stmt = $pdo->prepare("UPDATE teachers SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = ? AND is_approved = 1 AND is_hidden = 0) WHERE id = ?");
         $stmt->execute([$teacherId, $teacherId]);
         
         header('Location: teachers.php?success=1');
@@ -36,6 +37,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 $pageTitle = 'Преподаватели';
 require_once '../includes/header.php';
+
+// Отображение сообщений об успехе/ошибке
+if (isset($_GET['success'])) {
+    echo '<div class="alert alert-success alert-dismissible fade show mt-3" role="alert">';
+    echo '<i class="bi bi-check-circle me-2"></i>Отзыв успешно добавлен!';
+    echo '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    echo '</div>';
+}
+
+if (isset($_GET['error']) && $_GET['error'] === 'limit_reached') {
+    echo '<div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">';
+    echo '<i class="bi bi-exclamation-triangle me-2"></i>Достигнут лимит отзывов (5) для этого преподавателя.';
+    echo '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    echo '</div>';
+}
 
 // Проверяем наличие колонок в таблице teachers
 $hasCampus = $hasStrict = $hasAutoExam = false;
@@ -60,16 +76,16 @@ if ($hasCampus && $filterCampus) { $where[] = "campus = ?"; $params[] = $filterC
 if ($hasStrict && $filterStrict !== '' && $filterStrict !== null) { $where[] = "is_strict = ?"; $params[] = $filterStrict ? 1 : 0; }
 $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Если avg_rating нет — считаем из teacher_reviews
-$ratingExpr = $hasAvgRating ? 't.avg_rating' : 'COALESCE((SELECT ROUND(AVG(rating), 1) FROM teacher_reviews r WHERE r.teacher_id = t.id), 0)';
+// Если avg_rating нет — считаем из teacher_reviews (только одобренные и не скрытые)
+$ratingExpr = $hasAvgRating ? 't.avg_rating' : 'COALESCE((SELECT ROUND(AVG(rating), 1) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0), 0)';
 $stmt = $pdo->prepare("SELECT t.*, $ratingExpr as calculated_rating FROM teachers t $whereSql ORDER BY t.full_name");
 $stmt->execute($params);
 $teachers = $stmt->fetchAll();
 
 $reviewsData = [];
 foreach ($teachers as $teacher) {
-    // Показываем только одобренные и не скрытые отзывы
-    $stmt = $pdo->prepare("SELECT tr.*, u.full_name as user_name FROM teacher_reviews tr LEFT JOIN users u ON tr.student_id = u.id WHERE tr.teacher_id = ? AND tr.is_approved = 1 AND tr.is_hidden = 0 ORDER BY tr.created_at DESC");
+    // Показываем только одобренные и не скрытые отзывы, максимум 5
+    $stmt = $pdo->prepare("SELECT tr.*, u.full_name as user_name FROM teacher_reviews tr LEFT JOIN users u ON tr.student_id = u.id WHERE tr.teacher_id = ? AND tr.is_approved = 1 AND tr.is_hidden = 0 ORDER BY tr.created_at DESC LIMIT 5");
     $stmt->execute([$teacher['id']]);
     $reviewsData[$teacher['id']] = $stmt->fetchAll();
 }

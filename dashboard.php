@@ -19,7 +19,12 @@ require_once 'includes/header.php';
                     <h3 class="auth-title"><i class="bi bi-box-arrow-in-right me-2"></i>Вход в систему</h3>
                     <p class="auth-subtitle">Добро пожаловать в Учеба24</p>
                     <?php if (isset($_GET['error'])): ?>
-                    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i><?= e($_GET['error']) ?></div>
+                    <div class="notification error">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div class="notification-content">
+                            <p class="notification-text mb-0"><?= e($_GET['error']) ?></p>
+                        </div>
+                    </div>
                     <?php endif; ?>
                     <form action="auth.php" method="POST">
                         <div class="mb-3">

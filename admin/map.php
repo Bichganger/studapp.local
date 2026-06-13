@@ -12,14 +12,6 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
 $pageTitle = 'Карта корпусов';
 require_once '../includes/header.php';
 
-// Категории мест
-$categories = [
-    'building'  => ['name' => 'Корпуса',       'icon' => 'bi-building',     'color' => '#7c4dff'],
-    'cafeteria' => ['name' => 'Где поесть',    'icon' => 'bi-cup-hot',      'color' => '#ff5252'],
-    'bus_stop'  => ['name' => 'Транспорт',     'icon' => 'bi-bus-front',    'color' => '#40c4ff'],
-    'other'     => ['name' => 'Прочее',        'icon' => 'bi-geo-alt',      'color' => '#e040fb'],
-];
-
 // Три реальных корпуса в Калининграде
 $campuses = [
     ['name' => 'Брамса 9', 'address' => 'ул. Брамса, 9', 'lat' => 54.7148, 'lng' => 20.4912, 'color' => '#7c4dff'],
@@ -47,7 +39,6 @@ $campuses = [
     border: 1px solid var(--border-color);
 }
 
-/* Контроллер карты - плавающий сверху */
 .map-nav-controls {
     position: absolute;
     top: 20px;
@@ -95,7 +86,6 @@ $campuses = [
     box-shadow: 0 4px 12px rgba(124, 77, 255, 0.3);
 }
 
-/* Стили для админ-панели управления картой */
 .admin-map-panel {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -135,7 +125,7 @@ $campuses = [
             <h5><i class="bi bi-gear me-2"></i>Настройка карты</h5>
             <p class="text-muted mb-3">Вставьте код из Яндекс.Конструктора карт для обновления меток:</p>
             <div class="code-input-area">
-                <textarea id="mapConstructorCode" class="form-control" placeholder='Вставьте сюда код скрипта из Яндекс.Конструктора, например:<br><script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A..."></script>'></textarea>
+                <textarea id="mapConstructorCode" class="form-control" placeholder="Вставьте сюда код скрипта из Яндекс.Конструктора"></textarea>
             </div>
             <div class="mt-3">
                 <button class="btn btn-accent" onclick="updateMapCode()"><i class="bi bi-check-circle me-2"></i>Обновить карту</button>
@@ -166,107 +156,107 @@ $campuses = [
                 <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A5547ee495eda499ca87c24a525d7bb19b0cbe616a9c586f1273a3f4fd8533458&amp;width=100%25&amp;height=100%25&amp;lang=ru_RU&amp;scroll=true"></script>
             </div>
         </div>
-        
-        <div class="row g-4 mt-4">
-            <div class="col-md-6">
-                <div class="card"><div class="card-header"><i class="bi bi-geo-alt me-2"></i>Все локации</div>
-                    <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
-                        <thead><tr><th>Название</th><th>Тип</th><th>Координаты</th></tr></thead>
-                        <tbody>
-                            <tr><td colspan="3" class="text-center py-3">
-                                <i class="bi bi-info-circle text-muted me-2"></i>
-                                Локации настраиваются через Яндекс.Конструктор карт
-                            </td></tr>
-                        </tbody>
-                    </table></div></div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card"><div class="card-header"><i class="bi bi-building me-2"></i>Корпуса</div>
-                    <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
-                        <thead><tr><th>Название</th><th>Адрес</th></tr></thead>
-                        <tbody>
-                            <?php foreach ($campuses as $c): ?>
-                            <tr><td><?= e($c['name']) ?></td><td><?= e($c['address']) ?></td></tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table></div></div>
-                </div>
-            </div>
-        </div>
     </div>
 </section>
 
 <script>
-// Функция обновления кода карты
 function updateMapCode() {
     const code = document.getElementById('mapConstructorCode').value;
     if (!code.trim()) {
         alert('Пожалуйста, введите код карты из Яндекс.Конструктора');
         return;
     }
-    
-    // Сохраняем в localStorage
     localStorage.setItem('customMapCode', code);
     
-    // Обновляем карту
     const mapContainer = document.getElementById('yandex-map-admin');
-    mapContainer.innerHTML = code;
     
-    alert('Карта обновлена!');
+    // Извлекаем URL скрипта из кода и загружаем его динамически
+    const scriptMatch = code.match(/src="([^"]+)"/);
+    if (scriptMatch && scriptMatch[1]) {
+        // Очищаем контейнер
+        mapContainer.innerHTML = '';
+        
+        // Создаём новый скрипт
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.charset = 'utf-8';
+        script.async = true;
+        script.src = scriptMatch[1].replace(/&amp;/g, '&');
+        
+        script.onload = function() {
+            console.log('Карта Яндекс загружена успешно');
+        };
+        
+        script.onerror = function() {
+            console.error('Ошибка загрузки карты Яндекс');
+            alert('Ошибка загрузки карты. Проверьте корректность кода.');
+        };
+        
+        mapContainer.appendChild(script);
+        alert('Карта обновлена!');
+    } else {
+        alert('Не удалось найти скрипт карты в коде. Проверьте формат.');
+    }
 }
-
+    
 function clearMapCode() {
     localStorage.removeItem('customMapCode');
     document.getElementById('mapConstructorCode').value = '';
     
-    // Восстанавливаем стандартную карту
     const mapContainer = document.getElementById('yandex-map-admin');
-    mapContainer.innerHTML = '<script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A5547ee495eda499ca87c24a525d7bb19b0cbe616a9c586f1273a3f4fd8533458&amp;width=100%25&amp;height=100%25&amp;lang=ru_RU&amp;scroll=true"><\/script>';
+    mapContainer.innerHTML = '';
     
+    // Загружаем карту по умолчанию
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.charset = 'utf-8';
+    script.async = true;
+    script.src = 'https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A5547ee495eda499ca87c24a525d7bb19b0cbe616a9c586f1273a3f4fd8533458&width=100%&height=100%&lang=ru_RU&scroll=true';
+    
+    mapContainer.appendChild(script);
     alert('Настройки карты сброшены!');
 }
 
-// Загрузка сохранённой карты при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     const savedCode = localStorage.getItem('customMapCode');
     if (savedCode) {
         document.getElementById('mapConstructorCode').value = savedCode;
+        
         const mapContainer = document.getElementById('yandex-map-admin');
-        mapContainer.innerHTML = savedCode;
+        mapContainer.innerHTML = '';
+        
+        // Извлекаем URL скрипта и загружаем динамически
+        const scriptMatch = savedCode.match(/src="([^"]+)"/);
+        if (scriptMatch && scriptMatch[1]) {
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.charset = 'utf-8';
+            script.async = true;
+            script.src = scriptMatch[1].replace(/&amp;/g, '&');
+            mapContainer.appendChild(script);
+        }
     }
-    
-    // Навигация по кнопкам на карте
+        
     document.querySelectorAll('.campus-nav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // Активный класс
             document.querySelectorAll('.campus-nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
-            // Прокрутка к карте с плавным эффектом
             const mapContainer = document.querySelector('.map-container-wrapper');
             if (mapContainer) {
-                mapContainer.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
+                mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
     });
     
-    // Кнопка сброса вида
     document.getElementById('resetMapView').addEventListener('click', function() {
         document.querySelectorAll('.campus-nav-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        
         const mapContainer = document.querySelector('.map-container-wrapper');
         if (mapContainer) {
-            mapContainer.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-            });
+            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     });
 });
 </script>
 <?php require_once '../includes/footer.php'; ?>
+

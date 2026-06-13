@@ -10,12 +10,28 @@ require_once 'includes/header.php';
                 <div class="auth-card">
                     <h3 class="auth-title"><i class="bi bi-mortarboard-fill me-2"></i>Регистрация</h3>
                     <p class="auth-subtitle">Присоединяйся к Учеба24</p>
-                    <?php if (isset($_GET['error'])): ?><div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i><?= e($_GET['error']) ?></div><?php endif; ?>
-                    <?php if (isset($_GET['success'])): ?><div class="alert alert-success"><i class="bi bi-check-circle-fill me-2"></i><?= e($_GET['success']) ?></div><?php endif; ?>
+                    <?php if (isset($_GET['error'])): ?>
+                    <div class="notification error">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div class="notification-content">
+                            <p class="notification-text mb-0"><?= e($_GET['error']) ?></p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (isset($_GET['success'])): ?>
+                    <div class="notification success">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div class="notification-content">
+                            <p class="notification-text mb-0"><?= e($_GET['success']) ?></p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                     <?php if (isset($_GET['pending'])): ?>
-                    <div class="alert alert-warning">
-                        <i class="bi bi-hourglass-split me-2"></i>Ваш аккаунт создан и ожидает одобрения администратора.
-                        <br><small>После одобрения вы сможете войти в систему.</small>
+                    <div class="notification warning">
+                        <i class="bi bi-hourglass-split"></i>
+                        <div class="notification-content">
+                            <p class="notification-text">Ваш аккаунт создан и ожидает одобрения администратора.<br><small>После одобрения вы сможете войти в систему.</small></p>
+                        </div>
                     </div>
                     <?php endif; ?>
                     <form action="reg_process.php" method="POST" id="regForm">

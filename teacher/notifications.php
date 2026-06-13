@@ -32,8 +32,22 @@ require_once '../includes/header.php';
 <div class="section"><div class="container">
     <div class="section-header"><span class="section-label">Преподавание</span><h1 class="section-title">Рассылка уведомлений</h1></div>
 
-    <?php if (isset($_GET['success'])): ?><div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Уведомление отправлено!</div><?php endif; ?>
-    <?php if (isset($_GET['error'])): ?><div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Заполните все поля</div><?php endif; ?>
+    <?php if (isset($_GET['success'])): ?>
+    <div class="notification success">
+        <i class="bi bi-check-circle"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Уведомление отправлено!</p>
+        </div>
+    </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['error'])): ?>
+    <div class="notification error">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Заполните все поля</p>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="row g-3">
         <div class="col-md-4">

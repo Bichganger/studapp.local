@@ -23,11 +23,12 @@ $isTeacher = $role === 'teacher';
 </head>
 <body class="role-<?= $role ?? 'guest' ?>">
 <?php if ($flash): ?>
-<div class="flash-alert alert alert-<?= $flash['type'] ?> alert-dismissible fade show m-0 rounded-0" role="alert">
-    <div class="container">
-        <i class="bi bi-info-circle me-2"></i><?= e($flash['message']) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="notification <?= $flash['type'] ?>">
+    <i class="bi bi-info-circle"></i>
+    <div class="notification-content">
+        <p class="notification-text mb-0"><?= e($flash['message']) ?></p>
     </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" style="opacity: 0.5;"></button>
 </div>
 <?php endif; ?>
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">

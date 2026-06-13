@@ -75,10 +75,20 @@ require_once '../includes/header.php';
         </div>
         
         <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Совет добавлен!</div>
+        <div class="notification success">
+            <i class="bi bi-check-circle"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Совет добавлен!</p>
+            </div>
+        </div>
         <?php endif; ?>
         <?php if (!empty($tipErrors)): ?>
-        <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($tipErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div>
+        <div class="notification error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <div class="notification-content">
+                <ul class="mb-0"><?php foreach ($tipErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul>
+            </div>
+        </div>
         <?php endif; ?>
         
         <div class="card mb-4">

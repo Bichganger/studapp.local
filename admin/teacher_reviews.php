@@ -112,7 +112,12 @@ function renderRatingCircle(float $rating, int $size = 36, $showNumber = true): 
         </div>
         
         <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Действие выполнено успешно!</div>
+        <div class="notification success">
+            <i class="bi bi-check-circle"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Действие выполнено успешно!</p>
+            </div>
+        </div>
         <?php endif; ?>
         
         <!-- Фильтры -->
@@ -151,8 +156,8 @@ function renderRatingCircle(float $rating, int $size = 36, $showNumber = true): 
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <div>
-                            <strong><?= e($review['teacher_name']) ?></strong>
-                            <small class="text-muted d-block"><?= e($review['student_name']) ?> (<?= e($review['group_name']) ?>)</small>
+                            <strong><?= e($review['teacher_name'] ?? 'Неизвестно') ?></strong>
+                            <small class="text-muted d-block"><?= e($review['student_name'] ?? 'Аноним') ?><?= $review['group_name'] ? ' (' . e($review['group_name']) . ')' : '' ?></small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <?= renderRatingCircle($review['rating']) ?>

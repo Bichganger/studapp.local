@@ -58,8 +58,22 @@ require_once '../includes/header.php';
         <p class="section-subtitle">Управление занятиями по группам</p>
     </div>
 
-    <?php if (isset($_GET['ok'])): ?><div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Занятие добавлено!</div><?php endif; ?>
-    <?php if (isset($_GET['deleted'])): ?><div class="alert alert-info"><i class="bi bi-trash me-2"></i>Занятие удалено</div><?php endif; ?>
+    <?php if (isset($_GET['ok'])): ?>
+    <div class="notification success">
+        <i class="bi bi-check-circle"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Занятие добавлено!</p>
+        </div>
+    </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['deleted'])): ?>
+    <div class="notification info">
+        <i class="bi bi-trash"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Занятие удалено</p>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="row g-4">
         <div class="col-lg-4">

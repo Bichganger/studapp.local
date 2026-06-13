@@ -31,7 +31,14 @@ require_once '../includes/header.php';
 <div class="section"><div class="container">
     <div class="section-header"><span class="section-label">Администрирование</span><h1 class="section-title">Рассылка уведомлений</h1></div>
 
-    <?php if (isset($_GET['success'])): ?><div class="alert alert-success">Уведомление отправлено!</div><?php endif; ?>
+    <?php if (isset($_GET['success'])): ?>
+    <div class="notification success">
+        <i class="bi bi-check-circle"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Уведомление отправлено!</p>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="row g-3">
         <div class="col-md-4">

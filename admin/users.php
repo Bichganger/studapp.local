@@ -137,19 +137,44 @@ require_once '../includes/header.php';
         </div>
         
         <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Данные сохранены!</div>
+        <div class="notification success">
+            <i class="bi bi-check-circle"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Данные сохранены!</p>
+            </div>
+        </div>
         <?php endif; ?>
         <?php if (isset($_GET['deleted'])): ?>
-        <div class="alert alert-info"><i class="bi bi-trash me-2"></i>Пользователь удалён</div>
+        <div class="notification info">
+            <i class="bi bi-trash"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Пользователь удалён</p>
+            </div>
+        </div>
         <?php endif; ?>
         <?php if (isset($_GET['approved'])): ?>
-        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Пользователь одобрен</div>
+        <div class="notification success">
+            <i class="bi bi-check-circle"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Пользователь одобрен</p>
+            </div>
+        </div>
         <?php endif; ?>
         <?php if (isset($_GET['rejected'])): ?>
-        <div class="alert alert-warning"><i class="bi bi-x-circle me-2"></i>Доступ отклонён</div>
+        <div class="notification warning">
+            <i class="bi bi-x-circle"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Доступ отклонён</p>
+            </div>
+        </div>
         <?php endif; ?>
         <?php if (!empty($editErrors)): ?>
-        <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($editErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div>
+        <div class="notification error">
+            <i class="bi bi-exclamation-triangle"></i>
+            <div class="notification-content">
+                <ul class="mb-0"><?php foreach ($editErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul>
+            </div>
+        </div>
         <?php endif; ?>
         
         <div class="row g-4">

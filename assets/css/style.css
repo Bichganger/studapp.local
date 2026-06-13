@@ -957,26 +957,115 @@ a:hover {
 /* === Alerts === */
 .flash-alert {
     background: var(--bg-card);
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-top: 3px solid var(--info);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
-.alert-danger {
-    background: rgba(255, 82, 82, 0.1) !important;
-    border-color: rgba(255, 82, 82, 0.2) !important;
-    color: var(--danger) !important;
+.flash-alert i {
+    color: var(--info);
+    font-size: 1.1rem;
+    margin-top: 0.1rem;
 }
 
-.alert-success {
-    background: rgba(0, 230, 118, 0.1) !important;
-    border-color: rgba(0, 230, 118, 0.2) !important;
-    color: var(--accent) !important;
+.flash-alert .container {
+    flex: 1;
 }
 
-.alert-warning {
-    background: rgba(255, 215, 64, 0.1) !important;
-    border-color: rgba(255, 215, 64, 0.2) !important;
-    color: var(--warning) !important;
+/* Notification boxes (replaces Bootstrap alerts) */
+.notification {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.notification.success {
+    border-left-color: var(--accent);
+}
+
+.notification.success i {
+    color: var(--accent);
+}
+
+.notification.error {
+    border-left-color: var(--danger);
+}
+
+.notification.error i {
+    color: var(--danger);
+}
+
+.notification.warning {
+    border-left-color: var(--warning);
+}
+
+.notification.warning i {
+    color: var(--warning);
+}
+
+.notification.info {
+    border-left-color: var(--info);
+}
+
+.notification.info i {
+    color: var(--info);
+}
+
+.notification i {
+    font-size: 1.1rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.notification-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.notification ul {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.notification .btn-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    opacity: 0.5;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.notification .btn-close:hover {
+    opacity: 1;
 }
 
 /* === Comments === */

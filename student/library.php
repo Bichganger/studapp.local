@@ -133,7 +133,12 @@ function buildQuery(array $override): string {
             </div>
         </div>
         <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Работа успешно загружена!</div>
+        <div class="notification success">
+            <i class="bi bi-check-circle"></i>
+            <div class="notification-content">
+                <p class="notification-text mb-0">Работа успешно загружена!</p>
+            </div>
+        </div>
         <?php endif; ?>
         <?php if (empty($works)): ?>
         <div class="empty-state text-center py-5"><i class="bi bi-journal-x" style="font-size: 3rem;"></i><h4 class="mt-3">Работы не найдены</h4><p class="text-muted">Попробуйте изменить параметры поиска</p></div>
@@ -187,7 +192,12 @@ function buildQuery(array $override): string {
             <div class="modal-body">
                 <input type="hidden" name="action" value="upload">
                 <?php if (!empty($uploadErrors)): ?>
-                <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($uploadErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div>
+                <div class="notification error">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div class="notification-content">
+                        <ul class="mb-0"><?php foreach ($uploadErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul>
+                    </div>
+                </div>
                 <?php endif; ?>
                 <div class="mb-3"><label class="form-label">Название *</label><input type="text" name="title" class="form-control" required></div>
                 <div class="mb-3"><label class="form-label">Описание</label><textarea name="description" class="form-control" rows="2"></textarea></div>

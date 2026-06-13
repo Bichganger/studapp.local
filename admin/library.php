@@ -75,10 +75,29 @@ require_once '../includes/header.php';
 
 <div class="section"><div class="container">
     <div class="section-header"><span class="section-label">Администрирование</span><h1 class="section-title">Библиотека работ</h1></div>
-    <?php if (isset($_GET['success'])): ?><div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>Работа загружена!</div><?php endif; ?>
-    <?php if (isset($_GET['deleted'])): ?><div class="alert alert-info">Материал удалён</div><?php endif; ?>
+    <?php if (isset($_GET['success'])): ?>
+    <div class="notification success">
+        <i class="bi bi-check-circle"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Работа загружена!</p>
+        </div>
+    </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['deleted'])): ?>
+    <div class="notification info">
+        <i class="bi bi-trash"></i>
+        <div class="notification-content">
+            <p class="notification-text mb-0">Материал удалён</p>
+        </div>
+    </div>
+    <?php endif; ?>
     <?php if (!empty($uploadErrors)): ?>
-    <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($uploadErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul></div>
+    <div class="notification error">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div class="notification-content">
+            <ul class="mb-0"><?php foreach ($uploadErrors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul>
+        </div>
+    </div>
     <?php endif; ?>
 
     <div class="row g-4">

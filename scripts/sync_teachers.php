@@ -75,8 +75,8 @@ try {
         $errors[] = "⚠ teacher_tips: " . $e->getMessage();
     }
     
-    // 5. Синхронизация рейтингов
-    $pdo->exec("UPDATE teachers t SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = t.id) WHERE EXISTS (SELECT 1 FROM teacher_reviews WHERE teacher_id = t.id)");
+    // 5. Синхронизация рейтингов (только одобренные и не скрытые отзывы)
+    $pdo->exec("UPDATE teachers t SET avg_rating = (SELECT ROUND(AVG(rating), 1) FROM teacher_reviews WHERE teacher_id = t.id AND is_approved = 1 AND is_hidden = 0) WHERE EXISTS (SELECT 1 FROM teacher_reviews WHERE teacher_id = t.id AND is_approved = 1 AND is_hidden = 0)");
     $output[] = "✓ Рейтинги синхронизированы";
     
     // 6. Вывод результата
@@ -103,9 +103,11 @@ try {
         </div>
         <div class="card-body">
             <?php if (!empty($output)): ?>
-            <div class="alert alert-info">
-                <h5>Результаты:</h5>
-                <ul class="mb-0">
+            <div class="notification info">
+                <i class="bi bi-list-ul"></i>
+                <div class="notification-content">
+                    <div class="notification-title">Результаты:</div>
+                    <ul class="mb-0">
                     <?php foreach ($output as $msg): ?>
                     <li><?= $msg ?></li>
                     <?php endforeach; ?>
@@ -114,13 +116,16 @@ try {
             <?php endif; ?>
             
             <?php if (!empty($errors)): ?>
-            <div class="alert alert-warning">
-                <h5>Предупреждения:</h5>
-                <ul class="mb-0">
-                    <?php foreach ($errors as $err): ?>
-                    <li><?= $err ?></li>
-                    <?php endforeach; ?>
-                </ul>
+            <div class="notification warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div class="notification-content">
+                    <div class="notification-title">Предупреждения:</div>
+                    <ul class="mb-0">
+                        <?php foreach ($errors as $err): ?>
+                        <li><?= $err ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </div>
             <?php endif; ?>
             

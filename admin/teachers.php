@@ -16,9 +16,9 @@ try {
 } catch (Exception $e) {}
 
 if ($hasAvgRating) {
-    $teachers = $pdo->query("SELECT t.*, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
+    $teachers = $pdo->query("SELECT t.*, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
 } else {
-    $teachers = $pdo->query("SELECT t.*, COALESCE((SELECT ROUND(AVG(r.rating), 1) FROM teacher_reviews r WHERE r.teacher_id = t.id), 0) as avg_rating, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
+    $teachers = $pdo->query("SELECT t.*, COALESCE((SELECT ROUND(AVG(r.rating), 1) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0), 0) as avg_rating, (SELECT COUNT(*) FROM teacher_reviews r WHERE r.teacher_id = t.id AND r.is_approved = 1 AND r.is_hidden = 0) as review_count FROM teachers t ORDER BY t.full_name")->fetchAll();
 }
 
 require_once '../includes/header.php';
